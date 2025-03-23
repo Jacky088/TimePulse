@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FiX, FiCalendar, FiClock, FiGlobe, FiCheck } from 'react-icons/fi';
 import { HexColorPicker } from 'react-colorful';
 import { useTimers } from '../../context/TimerContext';
+import { useTheme } from '../../context/ThemeContext';
 
 // 丰富的预设颜色选择
 const presetColors = [
@@ -30,6 +31,7 @@ const presetColors = [
 
 export default function AddTimerModal({ onClose }) {
   const { addTimer, holidaysList } = useTimers();
+  const { accentColor } = useTheme();
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showHolidaysList, setShowHolidaysList] = useState(false);
   const [step, setStep] = useState(1); // 1: 基本信息, 2: 选择颜色, 3: 完成
@@ -218,7 +220,8 @@ export default function AddTimerModal({ onClose }) {
                 取消
               </button>
               <button
-                className="px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white"
+                className="px-4 py-2 rounded-lg text-white"
+                style={{ backgroundColor: accentColor }}
                 onClick={() => setStep(2)}
                 disabled={!formData.name || !formData.targetDate || !formData.targetTime}
                 data-umami-event="下一步-选择颜色"
@@ -274,7 +277,8 @@ export default function AddTimerModal({ onClose }) {
                 上一步
               </button>
               <button
-                className="px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white"
+                className="px-4 py-2 rounded-lg text-white"
+                style={{ backgroundColor: accentColor }}
                 onClick={handleSubmit}
                 data-umami-event="创建计时器-确认"
               >

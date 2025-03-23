@@ -5,9 +5,11 @@ import { QRCodeSVG } from 'qrcode.react';
 import { v4 as uuidv4 } from 'uuid';
 import { saveToRemoteCache, getFromRemoteCache } from '../../utils/syncService';
 import { useTimers } from '../../context/TimerContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function LoginModal({ onClose }) {
   const { timers, addTimer } = useTimers();
+  const { accentColor } = useTheme();
   const [syncId, setSyncId] = useState('');
   const [syncUrl, setSyncUrl] = useState('');
   const [password, setPassword] = useState('');
@@ -251,7 +253,8 @@ export default function LoginModal({ onClose }) {
           {status === 'idle' && !showLogin && (
             <div className="flex justify-center">
               <button
-                className="px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white cursor-pointer"
+                className="px-4 py-2 rounded-lg text-white cursor-pointer"
+                style={{ backgroundColor: accentColor }}
                 onClick={generateSyncId}
                 data-umami-event="生成同步ID"
                 disabled={isLoading}
@@ -290,7 +293,8 @@ export default function LoginModal({ onClose }) {
               
               <button
                 type="submit"
-                className="w-full px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white cursor-pointer flex items-center justify-center"
+                className="w-full px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center"
+                style={{ backgroundColor: accentColor }}
                 disabled={isLoading}
                 data-umami-event="登录同步ID"
               >
@@ -355,11 +359,10 @@ export default function LoginModal({ onClose }) {
                     className="flex-1 px-4 py-2 rounded-l-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                   />
                   <button
-                    className={`px-4 py-2 rounded-r-lg ${
-                      copied 
-                        ? 'bg-green-500 text-white' 
-                        : 'bg-primary-500 hover:bg-primary-600 text-white'
-                    } cursor-pointer`}
+                    className={`px-4 py-2 rounded-r-lg text-white cursor-pointer`}
+                    style={{ 
+                      backgroundColor: copied ? '#10b981' : accentColor 
+                    }}
                     onClick={copyUrl}
                     data-umami-event="复制同步链接"
                   >
@@ -371,7 +374,8 @@ export default function LoginModal({ onClose }) {
               {status === 'saved' && (
                 <div className="flex space-x-2">
                   <button
-                    className="flex-1 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white cursor-pointer flex items-center justify-center"
+                    className="flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center"
+                    style={{ backgroundColor: '#3b82f6' }}
                     onClick={uploadToRemote}
                     data-umami-event="上传数据"
                     disabled={isLoading}
@@ -381,7 +385,8 @@ export default function LoginModal({ onClose }) {
                   </button>
                   
                   <button
-                    className="flex-1 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white cursor-pointer flex items-center justify-center"
+                    className="flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center"
+                    style={{ backgroundColor: '#10b981' }}
                     onClick={loadFromRemote}
                     data-umami-event="下载数据"
                     disabled={isLoading}
@@ -422,7 +427,8 @@ export default function LoginModal({ onClose }) {
           </button>
           {(status === 'generated' || status === 'saved') && navigator.share && (
             <button
-              className="flex-1 px-4 py-3 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center cursor-pointer z-[650]"
+              className="flex-1 px-4 py-3 rounded-lg text-white flex items-center justify-center cursor-pointer z-[650]"
+              style={{ backgroundColor: accentColor }}
               onClick={() => {
                 navigator.share({
                   title: '登录到我的TimePulse',

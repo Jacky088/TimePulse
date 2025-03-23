@@ -75,8 +75,8 @@ export default function Home() {
       </Layout>
       
       {/* 将按钮移到Layout组件外部，确保它们总是在最上层 */}
-      {/* 添加计时器按钮 - 使用动态主题色 */}
-      <div className="fixed bottom-6 right-6" style={{ zIndex: 9999 }}>
+      {/* 添加计时器按钮 - 保持使用动态主题色 */}
+      <div className="fixed bottom-6 right-6" style={{ zIndex: 10 }}>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -94,8 +94,8 @@ export default function Home() {
         </motion.button>
       </div>
       
-      {/* 分享按钮 - 使用动态主题色 */}
-      <div className="fixed bottom-6 left-6" style={{ zIndex: 9999 }}>
+      {/* 分享按钮 - 保持使用动态主题色 */}
+      <div className="fixed bottom-6 left-6" style={{ zIndex: 10 }}>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

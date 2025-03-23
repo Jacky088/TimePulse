@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { FiX, FiCopy, FiShare2, FiCheck } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTimers } from '../../context/TimerContext';
+import { useTheme } from '../../context/ThemeContext';
 import { createShareUrl } from '../../utils/shareUtils';
 
 export default function ShareModal({ onClose }) {
   const { timers, activeTimerId } = useTimers();
+  const { accentColor } = useTheme();
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [selectedTimer, setSelectedTimer] = useState(activeTimerId);
@@ -110,11 +112,10 @@ export default function ShareModal({ onClose }) {
               className="flex-1 px-4 py-2 rounded-l-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
             />
             <button
-              className={`px-4 py-2 rounded-r-lg ${
-                copied 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-primary-500 hover:bg-primary-600 text-white'
-              }`}
+              className={`px-4 py-2 rounded-r-lg text-white`}
+              style={{ 
+                backgroundColor: copied ? '#10b981' : accentColor 
+              }}
               onClick={handleCopy}
               data-umami-event="复制分享链接"
             >
@@ -151,7 +152,8 @@ export default function ShareModal({ onClose }) {
           </button>
           {navigator.share && (
             <button
-              className="flex-1 px-4 py-3 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center"
+              className="flex-1 px-4 py-3 rounded-lg text-white flex items-center justify-center"
+              style={{ backgroundColor: accentColor }}
               onClick={handleWebShare}
               data-umami-event="使用系统分享"
             >
