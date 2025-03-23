@@ -77,7 +77,7 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-40">
       <nav className="glass-card mx-4 mt-4 px-6 py-4 flex items-center justify-between">
-        {/* Logo - 增强渐变效果 */}
+        {/* Logo - 增强渐变效果，使用较深的相似色 */}
         <motion.div 
           className="flex items-center"
           initial={{ opacity: 0, x: -20 }}
@@ -87,7 +87,7 @@ export default function Header() {
           <h1 
             className="text-xl md:text-2xl font-bold font-display bg-clip-text text-transparent"
             style={{ 
-              backgroundImage: `linear-gradient(45deg, ${accentColor}, #ffffff)` 
+              backgroundImage: `linear-gradient(45deg, ${accentColor}, ${accentColor}66)` 
             }}
           >
             TimePulse
