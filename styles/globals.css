@@ -15,11 +15,36 @@
 
 /* 为所有元素添加色彩过渡效果 */
 * {
+  -webkit-transition: color var(--transition-duration) var(--transition-timing),
+              background-color var(--transition-duration) var(--transition-timing),
+              border-color var(--transition-duration) var(--transition-timing),
+              -webkit-box-shadow var(--transition-duration) var(--transition-timing),
+              box-shadow var(--transition-duration) var(--transition-timing),
+              opacity var(--transition-duration) var(--transition-timing);
   transition: color var(--transition-duration) var(--transition-timing),
               background-color var(--transition-duration) var(--transition-timing),
               border-color var(--transition-duration) var(--transition-timing),
+              -webkit-box-shadow var(--transition-duration) var(--transition-timing),
               box-shadow var(--transition-duration) var(--transition-timing),
               opacity var(--transition-duration) var(--transition-timing);
+}
+
+/* 为不支持CSS变量的浏览器提供备选值 */
+@supports not (--foo: bar) {
+  * {
+    -webkit-transition: color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                -webkit-box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                -webkit-box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 .dark {
@@ -77,6 +102,7 @@
   }
   
   .backdrop-blur-xs {
+    -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
   }
   
@@ -94,7 +120,20 @@
 /* 动画效果 */
 .animate-gradient {
   background-size: 400% 400%;
+  -webkit-animation: gradient 15s ease infinite;
   animation: gradient 15s ease infinite;
+}
+
+@-webkit-keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes gradient {
@@ -107,6 +146,36 @@
   100% {
     background-position: 0% 50%;
   }
+}
+
+@-webkit-keyframes digitSlideUp {
+  0% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+  100% { opacity: 0; -webkit-transform: translateY(-100%); transform: translateY(-100%); }
+}
+
+@keyframes digitSlideUp {
+  0% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+  100% { opacity: 0; -webkit-transform: translateY(-100%); transform: translateY(-100%); }
+}
+
+@-webkit-keyframes digitSlideDown {
+  0% { opacity: 0; -webkit-transform: translateY(100%); transform: translateY(100%); }
+  100% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+}
+
+@keyframes digitSlideDown {
+  0% { opacity: 0; -webkit-transform: translateY(100%); transform: translateY(100%); }
+  100% { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+}
+
+@-webkit-keyframes float {
+  0%, 100% { -webkit-transform: translateY(0); transform: translateY(0); }
+  50% { -webkit-transform: translateY(-10px); transform: translateY(-10px); }
+}
+
+@keyframes float {
+  0%, 100% { -webkit-transform: translateY(0); transform: translateY(0); }
+  50% { -webkit-transform: translateY(-10px); transform: translateY(-10px); }
 }
 
 /* 背景圆圈动画 */
@@ -136,11 +205,30 @@
 
 /* 玻璃效果 */
 .glass-effect {
-  backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
   background-color: rgba(255, 255, 255, 0.75); /* 增加不透明度 */
   border: 1px solid rgba(200, 200, 200, 0.3); /* 增加边框可见度 */
   color: rgba(0, 0, 0, 0.8); /* 确保文字颜色 */
+}
+
+/* 为不支持backdrop-filter的浏览器提供替代样式 */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass-effect {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .dark .glass-effect {
+    background-color: rgba(17, 25, 40, 0.9);
+  }
+  
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  .dark .glass-card {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+  }
 }
 
 .dark .glass-effect {
@@ -151,20 +239,27 @@
 
 /* 添加更多过渡动画类 */
 .transition-all-smooth {
-  transition: all 0.5s var(--transition-timing);
+  -webkit-transition: all 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  transition: all 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .transition-transform-smooth {
-  transition: transform 0.5s var(--transition-timing);
+  -webkit-transition: -webkit-transform 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  transition: -webkit-transform 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  transition: transform 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  transition: transform 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1)), -webkit-transform 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .transition-colors-smooth {
-  transition: color 0.5s var(--transition-timing),
-              background-color 0.5s var(--transition-timing),
-              border-color 0.5s var(--transition-timing);
+  -webkit-transition: color 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+              background-color 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+              border-color 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
+  transition: color 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+              background-color 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1)),
+              border-color 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-/* 自定义滚动条样式 */
+/* 自定义滚动条样式 - Webkit浏览器 (Chrome, Safari, Edge等) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -177,13 +272,14 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-primary), 0.3);
+  background: rgba(var(--color-primary, 14, 165, 233), 0.3);
   border-radius: 10px;
+  -webkit-transition: background 0.3s ease;
   transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-primary), 0.5);
+  background: rgba(var(--color-primary, 14, 165, 233), 0.5);
 }
 
 ::-webkit-scrollbar-corner {
@@ -193,7 +289,12 @@
 /* Firefox 滚动条样式 */
 html {
   scrollbar-width: thin;
-  scrollbar-color: rgba(var(--color-primary), 0.3) transparent;
+  scrollbar-color: rgba(var(--color-primary, 14, 165, 233), 0.3) transparent;
+}
+
+/* IE滚动条样式（有限支持） */
+body {
+  -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
 /* 滚动条交互优化 */
@@ -204,28 +305,43 @@ html {
   }
   
   ::-webkit-scrollbar-thumb {
-    background: rgba(var(--color-primary), 0.2);
+    background: rgba(var(--color-primary, 14, 165, 233), 0.2);
   }
   
   body:hover::-webkit-scrollbar-thumb {
-    background: rgba(var(--color-primary), 0.3);
+    background: rgba(var(--color-primary, 14, 165, 233), 0.3);
   }
 }
 
 /* 深色模式下滚动条反色处理 */
 .dark::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-primary), 0.4);
+  background: rgba(var(--color-primary, 56, 189, 248), 0.4);
 }
 
 .dark::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-primary), 0.6);
+  background: rgba(var(--color-primary, 56, 189, 248), 0.6);
 }
 
 .dark {
-  scrollbar-color: rgba(var(--color-primary), 0.4) transparent;
+  scrollbar-color: rgba(var(--color-primary, 56, 189, 248), 0.4) transparent;
 }
 
-/* 平滑滚动 */
-html {
-  scroll-behavior: smooth;
+/* 平滑滚动 - 添加后备方案 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* 适配旧版浏览器的备选字体和布局 */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+.font-display {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.font-mono {
+  font-family: 'Consolas', Monaco, 'Courier New', monospace;
 }
