@@ -4,9 +4,10 @@ import '../styles/globals.css';
 import { TimerProvider } from '../context/TimerContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { getFromRemoteCache } from '../utils/syncService';
+import ScrollProgress from '../components/UI/ScrollProgress';
+import ScrollHandle from '../components/UI/ScrollHandle';
 
 function MyApp({ Component, pageProps }) {
-  // 处理服务器端渲染
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
@@ -68,6 +69,8 @@ function MyApp({ Component, pageProps }) {
           <link rel="icon" href="/favicon.ico" />
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         </Head>
+        <ScrollProgress />
+        <ScrollHandle />
         <Component {...pageProps} />
       </TimerProvider>
     </ThemeProvider>
