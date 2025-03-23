@@ -28,8 +28,8 @@ export default function GradientBackground() {
       // 如果是新计时器或初始化，创建新圆圈
       const newCircles = Array.from({ length: 5 }, (_, i) => ({
         id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
+        x: Math.random() * 100 - 30 + Math.random() * 40,
+        y: Math.random() * 100 - 30 + Math.random() * 40,
         size: 30 + Math.random() * 40,
         speedX: (Math.random() - 0.5) * 0.03,
         speedY: (Math.random() - 0.5) * 0.03,
@@ -72,6 +72,7 @@ export default function GradientBackground() {
       `rgba(${r * 1.2}, ${g * 0.8}, ${b * 0.9}, 0.5)`, // 变体2
       `rgba(${r * 0.9}, ${g * 0.9}, ${b * 1.3}, 0.5)`, // 变体3
       `rgba(${r * 1.1}, ${g * 1.2}, ${b * 0.8}, 0.5)`, // 变体4
+      `rgba(${r * 1.3}, ${g * 0.9}, ${b * 0.9}, 0.5)`  // 变体5
     ];
   };
   
