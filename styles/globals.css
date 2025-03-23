@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: 255, 255, 255;
+  --color-foreground: 17, 24, 39;
+  --color-primary: 14, 165, 233;
+  --color-accent: 79, 70, 229;
+  --transition-duration: 300ms;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 为所有元素添加色彩过渡效果 */
+* {
+  transition: color var(--transition-duration) var(--transition-timing),
+              background-color var(--transition-duration) var(--transition-timing),
+              border-color var(--transition-duration) var(--transition-timing),
+              box-shadow var(--transition-duration) var(--transition-timing),
+              opacity var(--transition-duration) var(--transition-timing);
+}
+
+.dark {
+  --color-background: 18, 18, 18;
+  --color-foreground: 255, 255, 255;
+  --color-primary: 56, 189, 248;
+  --color-accent: 124, 58, 237;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 transition-colors duration-300;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+  
+  /* 确保文字在浅色模式下高对比度 */
+  .text-gray-600 {
+    @apply dark:text-gray-300;
+  }
+  
+  .text-gray-500 {
+    @apply dark:text-gray-400;
+  }
+  
+  /* 确保半透明卡片上的文字在浅色模式下可读 */
+  .glass-card {
+    @apply text-gray-800 dark:text-gray-100;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/70 dark:bg-black/30 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg text-gray-800 dark:text-gray-100;
+  }
+  
+  .btn {
+    @apply px-4 py-2 rounded-full font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 cursor-pointer;
+  }
+  
+  .btn-primary {
+    @apply btn bg-primary-500 hover:bg-primary-600 text-white;
+  }
+  
+  .btn-ghost {
+    @apply btn bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800;
+  }
+  
+  .digit-column {
+    @apply relative overflow-hidden text-center;
+  }
+  
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+  
+  /* 动态主题色按钮 */
+  .btn-theme {
+    color: rgb(var(--color-primary));
+    transition: color var(--transition-duration) ease;
+  }
+  
+  .btn-theme:hover {
+    color: rgba(var(--color-primary), 0.8);
+  }
+}
+
+/* 动画效果 */
+.animate-gradient {
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 背景圆圈动画 */
+.moving-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 数字滚动动画 */
+.digit-wrapper {
+  height: 1.2em;
+  line-height: 1.2em;
+  position: relative;
+  overflow: hidden;
+}
+
+.digit {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* 玻璃效果 */
+.glass-effect {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.75); /* 增加不透明度 */
+  border: 1px solid rgba(200, 200, 200, 0.3); /* 增加边框可见度 */
+  color: rgba(0, 0, 0, 0.8); /* 确保文字颜色 */
+}
+
+.dark .glass-effect {
+  background-color: rgba(17, 25, 40, 0.75); /* 增加不透明度 */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9); /* 确保文字颜色 */
+}
+
+/* 添加更多过渡动画类 */
+.transition-all-smooth {
+  transition: all 0.5s var(--transition-timing);
+}
+
+.transition-transform-smooth {
+  transition: transform 0.5s var(--transition-timing);
+}
+
+.transition-colors-smooth {
+  transition: color 0.5s var(--transition-timing),
+              background-color 0.5s var(--transition-timing),
+              border-color 0.5s var(--transition-timing);
+}

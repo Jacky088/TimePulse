@@ -1,0 +1,121 @@
+import { useRef, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTimers } from '../../context/TimerContext';
+import { useTheme } from '../../context/ThemeContext';
+
+export default function GradientBackground() {
+  const { getActiveTimer, activeTimerId } = useTimers();
+  const { theme } = useTheme();
+  const [circles, setCircles] = useState([]);
+  const [prevTimerId, setPrevTimerId] = useState(null);
+  const containerRef = useRef(null);
+  const activeTimer = getActiveTimer();
+  
+  // 生成渐变圆圈
+  useEffect(() => {
+    // 检查计时器是否变化
+    const isNewTimer = activeTimerId !== prevTimerId;
+    if (isNewTimer) {
+      setPrevTimerId(activeTimerId);
+    }
+    
+    // 基于活动计时器的颜色生成颜色
+    const baseColor = activeTimer?.color || '#0ea5e9';
+    const colors = generateColors(baseColor, theme === 'dark');
+    
+    // 生成或更新圆圈配置
+    if (circles.length === 0 || isNewTimer) {
+      // 如果是新计时器或初始化，创建新圆圈
+      const newCircles = Array.from({ length: 5 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 30 + Math.random() * 40,
+        speedX: (Math.random() - 0.5) * 0.03,
+        speedY: (Math.random() - 0.5) * 0.03,
+        color: colors[i % colors.length],
+        blur: 60 + Math.random() * 40,
+        opacity: 0.3 + Math.random() * 0.3
+      }));
+      setCircles(newCircles);
+    } else if (activeTimer) {
+      // 如果计时器颜色变化，平滑过渡圆圈颜色
+      setCircles(prev => prev.map((circle, i) => ({
+        ...circle,
+        color: colors[i % colors.length]
+      })));
+    }
+  }, [activeTimerId, theme, activeTimer]);
+  
+  // 根据基础颜色生成一组和谐的颜色
+  const generateColors = (baseColor, isDark) => {
+    // 解析颜色
+    let r, g, b;
+    
+    if (baseColor.startsWith('#')) {
+      const hex = baseColor.slice(1);
+      r = parseInt(hex.slice(0, 2), 16);
+      g = parseInt(hex.slice(2, 4), 16);
+      b = parseInt(hex.slice(4, 6), 16);
+    } else {
+      // 默认颜色
+      r = 14;
+      g = 165;
+      b = 233;
+    }
+    
+    // 生成颜色变体
+    return [
+      `rgba(${r}, ${g}, ${b}, 0.5)`, // 原色
+      `rgba(${r * 0.8}, ${g * 1.1}, ${b * 1.2}, 0.5)`, // 变体1
+      `rgba(${r * 1.2}, ${g * 0.8}, ${b * 0.9}, 0.5)`, // 变体2
+      `rgba(${r * 0.9}, ${g * 0.9}, ${b * 1.3}, 0.5)`, // 变体3
+      `rgba(${r * 1.1}, ${g * 1.2}, ${b * 0.8}, 0.5)`, // 变体4
+    ];
+  };
+  
+  return (
+    <div className="fixed inset-0 overflow-hidden z-0 pointer-events-none">
+      <AnimatePresence>
+        {circles.map(circle => (
+          <motion.div
+            key={`circle-${circle.id}-${activeTimerId || 'default'}`}
+            className="moving-circle absolute"
+            initial={{ 
+              left: `${circle.x}vw`,
+              top: `${circle.y}vh`,
+              width: `${circle.size}vw`,
+              height: `${circle.size}vw`,
+              opacity: 0 
+            }}
+            animate={{
+              left: [`${circle.x}vw`, `${circle.x + circle.speedX * 100}vw`],
+              top: [`${circle.y}vh`, `${circle.y + circle.speedY * 100}vh`],
+              backgroundColor: circle.color,
+              filter: `blur(${circle.blur}px)`,
+              opacity: circle.opacity
+            }}
+            transition={{
+              left: { duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
+              top: { duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
+              backgroundColor: { duration: 1.5 },
+              opacity: { duration: 0.8 }
+            }}
+          />
+        ))}
+      </AnimatePresence>
+      
+      {/* 颜色切换时的闪烁动画 */}
+      {activeTimerId !== prevTimerId && prevTimerId !== null && (
+        <motion.div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{ backgroundColor: activeTimer?.color || '#0ea5e9' }}
+          initial={{ opacity: 0.2 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 1.5 }}
+          onAnimationComplete={() => setPrevTimerId(activeTimerId)}
+        />
+      )}
+    </div>
+  );
+}
