@@ -37,9 +37,6 @@ function MyApp({ Component, pageProps }) {
         if (syncPass) {
           localStorage.setItem('timepulse_sync_password', syncPass);
           console.log(`已从URL导入同步密码`);
-          
-          // 尝试从远程获取数据 - 但我们不能在这里处理，
-          // 因为TimerContext还没准备好。我们在TimerContext中处理这个
         }
         
         // 清除URL参数但保留其他参数

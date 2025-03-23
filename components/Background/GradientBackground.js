@@ -42,6 +42,7 @@ export default function GradientBackground() {
       // 如果计时器颜色变化，平滑过渡圆圈颜色
       setCircles(prev => prev.map((circle, i) => ({
         ...circle,
+        // 使用过渡这里，而不是闪烁效果
         color: colors[i % colors.length]
       })));
     }
@@ -98,21 +99,26 @@ export default function GradientBackground() {
             transition={{
               left: { duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
               top: { duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
-              backgroundColor: { duration: 1.5 },
+              // 增加过渡持续时间，让颜色变化更平滑
+              backgroundColor: { duration: 2.5, ease: "easeOut" },
               opacity: { duration: 0.8 }
             }}
           />
         ))}
       </AnimatePresence>
       
-      {/* 颜色切换时的闪烁动画 */}
+      {/* 移除闪烁动画，替换为以下更平滑的过渡效果 */}
       {activeTimerId !== prevTimerId && prevTimerId !== null && (
         <motion.div
           className="absolute inset-0 z-0 pointer-events-none"
-          style={{ backgroundColor: activeTimer?.color || '#0ea5e9' }}
-          initial={{ opacity: 0.2 }}
-          animate={{ opacity: 0 }}
-          transition={{ duration: 1.5 }}
+          // 背景使用径向渐变，从中心向外扩散，效果更自然
+          style={{ 
+            background: `radial-gradient(circle at center, ${activeTimer?.color || '#0ea5e9'}05 0%, transparent 70%)` 
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 2.5, ease: "easeOut" }}
           onAnimationComplete={() => setPrevTimerId(activeTimerId)}
         />
       )}
