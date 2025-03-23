@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiX, FiCopy, FiShare2, FiCheck } from 'react-icons/fi';
+import { FiX, FiCopy, FiShare2, FiCheck, FiList } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
 import { createShareUrl } from '../../utils/shareUtils';
+import CustomSelect from './CustomSelect';
 
 export default function ShareModal({ onClose }) {
   const { timers, activeTimerId } = useTimers();
@@ -53,6 +54,25 @@ export default function ShareModal({ onClose }) {
     }
   };
   
+  // 处理选择下拉菜单改变
+  const handleSelectChange = (e) => {
+    if (e.target.value === 'all') {
+      setShareAll(true);
+    } else {
+      setShareAll(false);
+      setSelectedTimer(e.target.value);
+    }
+  };
+  
+  // 创建下拉菜单选项
+  const selectOptions = [
+    { value: 'all', label: '分享所有计时器' },
+    ...timers.map(timer => ({
+      value: timer.id,
+      label: timer.name
+    }))
+  ];
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -79,27 +99,16 @@ export default function ShareModal({ onClose }) {
         </div>
         
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">选择要分享的倒计时</label>
-          <select
+          <CustomSelect
+            name="shareTimer"
             value={shareAll ? 'all' : selectedTimer}
-            onChange={(e) => {
-              if (e.target.value === 'all') {
-                setShareAll(true);
-              } else {
-                setShareAll(false);
-                setSelectedTimer(e.target.value);
-              }
-            }}
-            className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+            onChange={handleSelectChange}
+            options={selectOptions}
+            placeholder="选择要分享的倒计时"
+            label="选择要分享的倒计时"
+            icon={FiList}
             data-umami-event="选择分享计时器"
-          >
-            <option value="all">分享所有计时器</option>
-            {timers.map(timer => (
-              <option key={timer.id} value={timer.id}>
-                {timer.name}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         
         <div className="mb-6">

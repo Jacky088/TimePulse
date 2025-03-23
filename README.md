@@ -19,6 +19,7 @@ TimePulse 是一个具有现代化 UI 和交互的倒计时网页应用，支持
 - Framer Motion (动画)
 - Tailwind CSS (样式)
 - localStorage (本地存储)
+- [KV Cache](https://github.com/RavelloH/kv-cache) (数据存储)
 
 ## 快速开始
 
@@ -49,6 +50,8 @@ npm run build
 - 点击左下角分享按钮分享倒计时
 - 点击右上角全屏按钮进入全屏模式
 - 向下滚动可查看更多信息和运行日志
+- 使用右上角菜单可以编辑/删除倒计时
+- 可生成同步ID，用于在不同设备间同步数据
 
 ## 许可证
 

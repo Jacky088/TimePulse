@@ -4,6 +4,7 @@ import { FiX, FiCalendar, FiClock, FiGlobe, FiCheck } from 'react-icons/fi';
 import { HexColorPicker } from 'react-colorful';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
+import CustomSelect from './CustomSelect';
 
 // 丰富的预设颜色选择
 const presetColors = [
@@ -120,7 +121,7 @@ export default function AddTimerModal({ onClose }) {
             
             <div className="mb-6">
               <button 
-                className="w-full glass-card p-4 mb-4 text-left flex items-center hover:bg-white/10 dark:hover:bg-black/10"
+                className="w-full glass-card p-4 mb-4 text-left flex items-center hover:bg-white/10 dark:hover:bg黑/10"
                 onClick={() => setShowHolidaysList(!showHolidaysList)}
                 data-umami-event="查看节假日列表"
               >
@@ -179,7 +180,7 @@ export default function AddTimerModal({ onClose }) {
               
               <div>
                 <label className="block text-sm font-medium mb-1">目标时间</label>
-                <div className="flex items-center bg-white/10 dark:bg-black/10 rounded-lg border border-white/20 dark:border-white/10">
+                <div className="flex items-center bg白/10 dark:bg黑/10 rounded-lg border border白/20 dark:border白/10">
                   <span className="pl-3 text-gray-500"><FiClock /></span>
                   <input
                     type="time"
@@ -194,21 +195,19 @@ export default function AddTimerModal({ onClose }) {
               
               <div>
                 <label className="block text-sm font-medium mb-1">时区</label>
-                <div className="flex items-center bg-white/10 dark:bg-black/10 rounded-lg border border-white/20 dark:border-white/10">
-                  <span className="pl-3 text-gray-500"><FiGlobe /></span>
-                  <select
-                    name="timezone"
-                    value={formData.timezone}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none rounded-lg"
-                  >
-                    <option value="Asia/Shanghai">中国标准时间 (UTC+8)</option>
-                    <option value="America/New_York">美国东部时间</option>
-                    <option value="Europe/London">英国时间</option>
-                    <option value="Europe/Paris">欧洲中部时间</option>
-                    <option value="Asia/Tokyo">日本时间</option>
-                  </select>
-                </div>
+                <CustomSelect
+                  name="timezone"
+                  value={formData.timezone}
+                  onChange={handleChange}
+                  icon={FiGlobe}
+                  options={[
+                    { value: 'Asia/Shanghai', label: '中国标准时间 (UTC+8)' },
+                    { value: 'America/New_York', label: '美国东部时间' },
+                    { value: 'Europe/London', label: '英国时间' },
+                    { value: 'Europe/Paris', label: '欧洲中部时间' },
+                    { value: 'Asia/Tokyo', label: '日本时间' }
+                  ]}
+                />
               </div>
             </form>
             
