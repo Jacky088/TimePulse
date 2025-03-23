@@ -90,7 +90,7 @@ export default function Header() {
               backgroundImage: `linear-gradient(45deg, ${accentColor}, ${accentColor}66)` 
             }}
           >
-            TimePulse
+            <a href="https://timepulse.ravelloh.top/">TimePulse</a>
           </h1>
         </motion.div>
 

@@ -107,7 +107,7 @@ export default function Footer() {
         
         <div className="mt-8 pt-4 border-t border-gray-300 dark:border-white/10 text-center text-sm text-gray-600 dark:text-gray-300">
           <p>
-            © {new Date().getFullYear()} TimePulse. 使用 Next.js 和 Framer Motion 构建。
+            © {new Date().getFullYear()} <a className="underline" href="https://timepulse.ravelloh.top/">TimePulse</a> by <a className="underline" href="https://ravelloh.top/">RavelloH</a>. 使用 Next.js 和 Framer Motion 构建。
           </p>
         </div>
       </div>
