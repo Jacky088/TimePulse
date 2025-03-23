@@ -65,7 +65,7 @@ export default function Layout({ children }) {
         
         {children}
         
-        {/* 修改Footer容器，进一步降低z-index确保它不会拦截底部按钮的点击 */}
+        {/* 修改 Footer 容器，更好地适应移动端 */}
         <motion.div 
           ref={footerRef}
           style={{ 
@@ -73,7 +73,7 @@ export default function Layout({ children }) {
             backdropFilter: `blur(${footerBlur.get()}px)`,
             pointerEvents: showFooter ? 'auto' : 'none'
           }} 
-          className="fixed inset-0 z-10" // 降低z-index到10
+          className="fixed inset-0 z-10 overflow-y-auto max-h-screen" // 添加 overflow-y-auto 和 max-h-screen
         >
           <Footer />
         </motion.div>
