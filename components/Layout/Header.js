@@ -96,7 +96,8 @@ export default function Header() {
 
         {/* 计时器选择器 - 桌面版 - 使用动画过渡消除闪烁 */}
         <div className="hidden md:flex space-x-4 overflow-x-auto py-2 max-w-md">
-          <AnimatePresence mode="wait">
+          {/* 移除 AnimatePresence 的 mode="wait" 属性，允许多个子元素同时动画 */}
+          <AnimatePresence>
             {timers.map(timer => (
               <motion.button
                 key={timer.id}

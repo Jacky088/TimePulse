@@ -65,7 +65,7 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
         {/* 数字动画 */}
         <div className="relative w-full h-full flex items-center justify-center">
           {/* 当前显示的数字 */}
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="sync">
             {isChanging ? (
               <>
                 {/* 旧数字向上滑出 */}
