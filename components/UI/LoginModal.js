@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiX, FiSave, FiShare2, FiCopy, FiCheck, FiDownload, FiUpload, FiLock } from 'react-icons/fi';
+import { FiX, FiSave, FiShare2, FiCopy, FiCheck, FiDownload, FiUpload, FiLock, FiWifiOff } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 import { v4 as uuidv4 } from 'uuid';
 import { saveToRemoteCache, getFromRemoteCache } from '../../utils/syncService';
@@ -21,6 +21,7 @@ export default function LoginModal({ onClose }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showLogin, setShowLogin] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   
   // 初始化 - 检查是否已有同步ID
   useEffect(() => {
@@ -40,6 +41,39 @@ export default function LoginModal({ onClose }) {
       setSyncUrl(url);
     }
   }, []);
+  
+  // 检查网络状态
+  useEffect(() => {
+    const checkOnlineStatus = () => {
+      setIsOffline(!navigator.onLine);
+    };
+    
+    // 初始检查
+    checkOnlineStatus();
+    
+    // 监听状态变化
+    window.addEventListener('online', checkOnlineStatus);
+    window.addEventListener('offline', checkOnlineStatus);
+    
+    // 清理
+    return () => {
+      window.removeEventListener('online', checkOnlineStatus);
+      window.removeEventListener('offline', checkOnlineStatus);
+    };
+  }, []);
+  
+  // 监听应用恢复在线状态
+  useEffect(() => {
+    const handleAppOnline = () => {
+      // 当应用恢复在线状态时，自动获取最新数据
+      if (syncId && password) {
+        loadFromRemote();
+      }
+    };
+    
+    window.addEventListener('appOnline', handleAppOnline);
+    return () => window.removeEventListener('appOnline', handleAppOnline);
+  }, [syncId, password]);
   
   // 生成新的同步ID和密码，并自动保存上传
   const generateSyncId = async () => {
@@ -213,6 +247,14 @@ export default function LoginModal({ onClose }) {
           </button>
         </div>
         
+        {/* 离线状态提示 */}
+        {isOffline && (
+          <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-lg flex items-center">
+            <FiWifiOff className="mr-2 flex-shrink-0" />
+            <span>您当前处于离线模式，同步功能不可用。请恢复网络连接后重试。</span>
+          </div>
+        )}
+        
         {/* 错误和成功提示 */}
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg">
@@ -374,22 +416,22 @@ export default function LoginModal({ onClose }) {
               {status === 'saved' && (
                 <div className="flex space-x-2">
                   <button
-                    className="flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center"
+                    className={`flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center ${isOffline ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{ backgroundColor: '#3b82f6' }}
-                    onClick={uploadToRemote}
+                    onClick={isOffline ? null : uploadToRemote}
                     data-umami-event="上传数据"
-                    disabled={isLoading}
+                    disabled={isLoading || isOffline}
                   >
                     <FiUpload className="mr-2" />
                     {isLoading ? '上传中...' : '上传当前数据'}
                   </button>
                   
                   <button
-                    className="flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center"
+                    className={`flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center ${isOffline ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{ backgroundColor: '#10b981' }}
-                    onClick={loadFromRemote}
+                    onClick={isOffline ? null : loadFromRemote}
                     data-umami-event="下载数据"
-                    disabled={isLoading}
+                    disabled={isLoading || isOffline}
                   >
                     <FiDownload className="mr-2" />
                     {isLoading ? '下载中...' : '下载最新数据'}

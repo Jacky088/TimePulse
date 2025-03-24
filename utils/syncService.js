@@ -5,6 +5,14 @@
 const API_URL = 'https://cache.ravelloh.top/api';
 
 /**
+ * 检查网络连接状态
+ * @returns {boolean} 是否在线
+ */
+const checkOnlineStatus = () => {
+  return typeof navigator !== 'undefined' && navigator.onLine;
+};
+
+/**
  * 保存数据到远程缓存
  * @param {string} uuid - 同步ID
  * @param {string} password - 密码
@@ -13,6 +21,11 @@ const API_URL = 'https://cache.ravelloh.top/api';
  * @returns {Promise} 响应结果
  */
 export async function saveToRemoteCache(uuid, password, data, expiredTime = 30 * 24 * 60 * 60 * 1000) {
+  // 首先检查网络状态
+  if (!checkOnlineStatus()) {
+    throw new Error('您当前处于离线状态，无法同步数据');
+  }
+  
   try {
     const response = await fetch(`${API_URL}?mode=set`, {
       method: 'POST',
@@ -47,6 +60,11 @@ export async function saveToRemoteCache(uuid, password, data, expiredTime = 30 *
  * @returns {Promise} 响应结果
  */
 export async function getFromRemoteCache(uuid, password, shouldDelete = false) {
+  // 首先检查网络状态
+  if (!checkOnlineStatus()) {
+    throw new Error('您当前处于离线状态，无法获取远程数据');
+  }
+  
   try {
     const response = await fetch(`${API_URL}?mode=get`, {
       method: 'POST',

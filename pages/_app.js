@@ -6,6 +6,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { getFromRemoteCache } from '../utils/syncService';
 import ScrollProgress from '../components/UI/ScrollProgress';
 import ScrollHandle from '../components/UI/ScrollHandle';
+import OfflineNotification from '../components/UI/OfflineNotification';
 
 function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
@@ -50,6 +51,15 @@ function MyApp({ Component, pageProps }) {
     
     checkSyncId();
     window.addEventListener('hashchange', handleHashChange);
+    
+    // 监听Service Worker控制状态变化
+    if ('serviceWorker' in navigator) {
+      // 监听控制器变化
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('Service Worker已接管页面，可以发送通知');
+      });
+    }
+    
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
@@ -66,6 +76,7 @@ function MyApp({ Component, pageProps }) {
           <link rel="icon" href="/favicon.ico" />
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         </Head>
+        <OfflineNotification /> {/* 保留此组件用于监听离线状态 */}
         <ScrollProgress />
         <ScrollHandle />
         <Component {...pageProps} />

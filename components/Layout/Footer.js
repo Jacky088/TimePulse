@@ -1,10 +1,31 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiGithub, FiClock, FiInfo } from 'react-icons/fi';
+import { FiGithub, FiClock, FiInfo, FiWifiOff, FiRefreshCw } from 'react-icons/fi';
 
 export default function Footer() {
   const [logs, setLogs] = useState([]);
   const [currentTime, setCurrentTime] = useState('');
+  const [isOffline, setIsOffline] = useState(false);
+  const [isCacheUpdating, setIsCacheUpdating] = useState(false);
+  const [lastCacheUpdate, setLastCacheUpdate] = useState(null);
+
+  // 检查网络状态
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      setIsOffline(!navigator.onLine);
+      
+      const handleOnline = () => setIsOffline(false);
+      const handleOffline = () => setIsOffline(true);
+      
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, []);
 
   // 更新当前时间
   useEffect(() => {
@@ -38,6 +59,32 @@ export default function Footer() {
       console.log = originalConsoleLog;
     };
   }, []);
+
+  // 监听缓存更新事件
+  useEffect(() => {
+    const handleCacheUpdated = (e) => {
+      setIsCacheUpdating(false);
+      setLastCacheUpdate(new Date(e.detail.timestamp).toLocaleString());
+    };
+    
+    window.addEventListener('cacheUpdated', handleCacheUpdated);
+    return () => window.removeEventListener('cacheUpdated', handleCacheUpdated);
+  }, []);
+  
+  // 更新缓存
+  const updateCache = () => {
+    if (typeof window.updateServiceWorkerCache === 'function') {
+      const success = window.updateServiceWorkerCache();
+      if (success) {
+        setIsCacheUpdating(true);
+        console.log('已发送缓存更新请求');
+      } else {
+        console.log('无法更新缓存：Service Worker 未激活');
+      }
+    } else {
+      console.log('缓存更新功能不可用');
+    }
+  };
 
   return (
     <div className="pointer-events-auto w-full min-h-screen md:min-h-screen flex items-center justify-center text-white dark:text-white text-gray-800 px-4">
@@ -104,6 +151,36 @@ export default function Footer() {
                 <p className="text-gray-400">暂无日志记录...</p>
               )}
             </div>
+          </div>
+        </div>
+        
+        {/* 离线模式提示 - 位于页脚中间，使用低调样式 */}
+        <div className="mt-4 md:mt-6 text-center opacity-70 flex flex-col items-center space-y-2">
+          {isOffline && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center">
+              <FiWifiOff className="mr-1 w-3 h-3" />
+              <span>当前处于离线模式，部分功能可能不可用</span>
+            </p>
+          )}
+          
+          {/* 缓存更新按钮 */}
+          <div className="flex items-center space-x-2">
+            <button 
+              className={`text-xs flex items-center justify-center px-2 py-1 rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isCacheUpdating ? 'opacity-50 cursor-wait' : ''}`}
+              onClick={updateCache}
+              disabled={isCacheUpdating || isOffline}
+              title="更新应用缓存"
+              data-umami-event="更新缓存"
+            >
+              <FiRefreshCw className={`mr-1 w-3 h-3 ${isCacheUpdating ? 'animate-spin' : ''}`} />
+              <span>更新缓存</span>
+            </button>
+            
+            {lastCacheUpdate && (
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                上次更新: {lastCacheUpdate}
+              </span>
+            )}
           </div>
         </div>
         
