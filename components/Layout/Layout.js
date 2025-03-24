@@ -65,7 +65,7 @@ export default function Layout({ children }) {
         
         {children}
         
-        {/* 修改 Footer 容器，更好地适应移动端 */}
+        {/* 修改 Footer 容器，适应不同屏幕大小 */}
         <motion.div 
           ref={footerRef}
           style={{ 
@@ -73,9 +73,11 @@ export default function Layout({ children }) {
             backdropFilter: `blur(${footerBlur.get()}px)`,
             pointerEvents: showFooter ? 'auto' : 'none'
           }} 
-          className="fixed inset-0 z-10 overflow-y-auto max-h-screen" // 添加 overflow-y-auto 和 max-h-screen
+          className="fixed inset-0 z-10 flex items-center justify-center overflow-y-auto"
         >
-          <Footer />
+          <div className="w-full">
+            <Footer />
+          </div>
         </motion.div>
         
         {/* 下滑提示 - 当footer显示时或已经滚动时隐藏 */}

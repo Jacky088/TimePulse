@@ -87,33 +87,33 @@ export default function Footer() {
   };
 
   return (
-    <div className="pointer-events-auto w-full min-h-screen md:min-h-screen flex items-center justify-center text-white dark:text-white text-gray-800 px-4">
-      <div className="w-full max-w-4xl glass-card p-4 sm:p-6 md:p-8 rounded-2xl">
+    <div className="pointer-events-auto w-full flex items-center justify-center text-gray-800 dark:text-white px-4 py-8">
+      <div className="w-full max-w-4xl glass-card p-3 sm:p-4 md:p-6 rounded-2xl max-h-[80vh] overflow-y-auto">
         {/* 在移动设备上使用更紧凑的布局 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4 flex items-center text-gray-800 dark:text-white">
+            <h2 className="text-lg md:text-xl font-bold mb-2 md:mb-3 flex items-center text-gray-800 dark:text-white">
               <FiInfo className="mr-2" /> 关于 TimePulse
             </h2>
-            <p className="mb-3 md:mb-4 text-sm md:text-base text-gray-700 dark:text-gray-200">
+            <p className="mb-2 md:mb-3 text-sm text-gray-700 dark:text-gray-200">
               TimePulse 是一个现代化的倒计时应用，支持多个计时器、数据同步和美观的动效展示。
             </p>
             
-            <div className="mb-4 md:mb-6">
+            <div className="mb-3 md:mb-4">
               <a 
                 href="https://github.com/RavelloH/TimePulse" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center px-3 py-1.5 md:px-4 md:py-2 text-sm rounded-full bg-gray-600 hover:bg-gray-700 dark:bg-white/20 dark:hover:bg.white/30 text-white dark:text-white transition-colors"
+                className="inline-flex items-center px-3 py-1.5 text-sm rounded-full bg-gray-600 hover:bg-gray-700 dark:bg-white/20 dark:hover:bg.white/30 text-white dark:text-white transition-colors"
                 data-umami-event="访问GitHub"
               >
                 <FiGithub className="mr-1 md:mr-2" /> GitHub 仓库
               </a>
             </div>
             
-            <div className="mb-4">
-              <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2 text-gray-800 dark:text-white">功能特点</h3>
-              <ul className="list-disc list-inside space-y-0.5 md:space-y-1 text-sm md:text-base text-gray-700 dark:text-gray-200">
+            <div className="mb-3">
+              <h3 className="text-sm md:text-base font-semibold mb-1 text-gray-800 dark:text-white">功能特点</h3>
+              <ul className="list-disc list-inside space-y-0.5 text-xs md:text-sm text-gray-700 dark:text-gray-200">
                 <li>精美的视觉效果和动画</li>
                 <li>支持多个计时器</li>
                 <li>数据本地存储</li>
@@ -126,16 +126,16 @@ export default function Footer() {
           </div>
           
           <div>
-            <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-4 flex items-center">
+            <h2 className="text-lg md:text-xl font-bold mb-2 md:mb-3 flex items-center">
               <FiClock className="mr-2" /> 运行日志
             </h2>
             
-            <div className="bg-black/30 rounded-lg p-2 md:p-3 mb-2 md:mb-3">
-              <p className="text-xs md:text-sm font-mono">当前时间: {currentTime}</p>
+            <div className="bg-black/30 rounded-lg p-2 mb-2">
+              <p className="text-xs font-mono">当前时间: {currentTime}</p>
             </div>
             
             {/* 减少移动设备上的日志高度 */}
-            <div className="h-36 sm:h-48 md:h-64 overflow-y-auto bg-black/30 rounded-lg p-2 md:p-3 font-mono text-xs">
+            <div className="h-24 sm:h-32 md:h-48 overflow-y-auto bg-black/30 rounded-lg p-2 font-mono text-xs">
               {logs.length > 0 ? (
                 logs.map((log, index) => (
                   <motion.div 
@@ -155,7 +155,7 @@ export default function Footer() {
         </div>
         
         {/* 离线模式提示 - 位于页脚中间，使用低调样式 */}
-        <div className="mt-4 md:mt-6 text-center opacity-70 flex flex-col items-center space-y-2">
+        <div className="mt-3 md:mt-4 text-center opacity-70 flex flex-col items-center space-y-1">
           {isOffline && (
             <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center">
               <FiWifiOff className="mr-1 w-3 h-3" />
@@ -184,7 +184,7 @@ export default function Footer() {
           </div>
         </div>
         
-        <div className="mt-4 md:mt-8 pt-2 md:pt-4 border-t border-gray-300 dark:border-white/10 text-center text-xs md:text-sm text-gray-600 dark:text-gray-300">
+        <div className="mt-3 md:mt-4 pt-2 border-t border-gray-300 dark:border-white/10 text-center text-xs text-gray-600 dark:text-gray-300">
           <p>
             © {new Date().getFullYear()} <a className="underline" href="https://timepulse.ravelloh.top/">TimePulse</a> by <a className="underline" href="https://ravelloh.top/">RavelloH</a>. 使用 Next.js 和 Framer Motion 构建。
           </p>
