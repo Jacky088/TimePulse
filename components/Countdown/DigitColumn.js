@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
   const [prevValue, setPrevValue] = useState(value);
   const [isChanging, setIsChanging] = useState(false);
   const [isSafari, setIsSafari] = useState(false);
+  
+  // 使用 useRef 跟踪动画状态，避免竞争条件
+  const animationRef = useRef({
+    timer: null,
+    isAnimating: false,
+    lastValue: value
+  });
   
   // 检测Safari浏览器
   useEffect(() => {
@@ -19,18 +26,94 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
     setIsSafari(isSafariBrowser || isIOS);
   }, []);
   
+  // 重置动画状态的函数
+  const resetAnimationState = () => {
+    // 清除任何正在进行的动画计时器
+    if (animationRef.current.timer) {
+      clearTimeout(animationRef.current.timer);
+      animationRef.current.timer = null;
+    }
+    
+    // 立即同步状态到最新值
+    setPrevValue(value);
+    setIsChanging(false);
+    animationRef.current.isAnimating = false;
+    animationRef.current.lastValue = value;
+  };
+  
+  // 监听页面可见性变化
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // 当页面重新变为可见时，重置动画状态
+        resetAnimationState();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [value]);
+  
   // 监听数字变化
   useEffect(() => {
-    if (value !== prevValue) {
-      setIsChanging(true);
-      const timer = setTimeout(() => {
-        setPrevValue(value);
-        setIsChanging(false);
-      }, isSafari ? 200 : 300); // Safari上减少动画持续时间
-      
-      return () => clearTimeout(timer);
+    // 避免不必要的动画 - 如果值相同，不触发动画
+    if (value === animationRef.current.lastValue) {
+      return;
     }
+    
+    // 更新 ref 中的最新值
+    animationRef.current.lastValue = value;
+    
+    // 如果已经有动画在进行，先清除它
+    if (animationRef.current.timer) {
+      clearTimeout(animationRef.current.timer);
+    }
+    
+    // 只有当前没有动画在进行时才开始新动画
+    if (!animationRef.current.isAnimating) {
+      setPrevValue(prevValue); // 确保使用当前的 prevValue
+      setIsChanging(true);
+      animationRef.current.isAnimating = true;
+    } else {
+      // 如果动画正在进行，立即重置到新状态
+      resetAnimationState();
+      
+      // 延迟一帧再开始新动画
+      requestAnimationFrame(() => {
+        setPrevValue(value);
+        setIsChanging(true);
+        animationRef.current.isAnimating = true;
+      });
+    }
+    
+    // 设置动画结束时间
+    const animationDuration = isSafari ? 200 : 300;
+    animationRef.current.timer = setTimeout(() => {
+      setPrevValue(value);
+      setIsChanging(false);
+      animationRef.current.isAnimating = false;
+      animationRef.current.timer = null;
+    }, animationDuration);
+    
+    // 清理函数
+    return () => {
+      if (animationRef.current.timer) {
+        clearTimeout(animationRef.current.timer);
+      }
+    };
   }, [value, prevValue, isSafari]);
+  
+  // 组件卸载时清理
+  useEffect(() => {
+    return () => {
+      if (animationRef.current.timer) {
+        clearTimeout(animationRef.current.timer);
+      }
+    };
+  }, []);
   
   // 根据数字位数确定宽度类名
   const getWidthClass = () => {
@@ -64,13 +147,13 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
       >
         {/* 数字动画 */}
         <div className="relative w-full h-full flex items-center justify-center">
-          {/* 当前显示的数字 */}
-          <AnimatePresence mode="sync">
+          {/* 每个动画状态使用唯一ID，避免React混淆元素 */}
+          <AnimatePresence mode="wait">
             {isChanging ? (
               <>
                 {/* 旧数字向上滑出 */}
                 <motion.span
-                  key={`prev-${prevValue}`}
+                  key={`prev-${prevValue}-${Date.now()}`}
                   initial={{ y: 0, opacity: 1 }}
                   animate={{ y: '-100%', opacity: 0 }}
                   exit={{ y: '-100%', opacity: 0 }}
@@ -89,7 +172,7 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
 
                 {/* 新数字从下向上滑入 */}
                 <motion.span
-                  key={`current-${value}`}
+                  key={`current-${value}-${Date.now()}`}
                   initial={{ y: '100%', opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: isSafari ? 0.2 : 0.3, ease: 'easeInOut' }}
@@ -107,7 +190,7 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
               </>
             ) : (
               <motion.span
-                key={`static-${value}`}
+                key={`static-${value}-${animationRef.current.isAnimating ? Date.now() : 'stable'}`}
                 className="text-5xl sm:text-6xl md:text-7xl font-bold"
                 style={{ 
                   color,

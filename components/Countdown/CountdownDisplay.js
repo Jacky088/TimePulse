@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimers } from '../../context/TimerContext';
 import DigitColumn from './DigitColumn';
@@ -10,8 +10,25 @@ export default function CountdownDisplay() {
   const [showDays, setShowDays] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
   
+  // 使用 ref 跟踪最后计算的时间，避免不必要的重渲染
+  const lastTimeRef = useRef({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const timerIdRef = useRef(null);
+  
+  // 判断两个时间对象是否相等
+  const areTimesEqual = (time1, time2) => {
+    return time1.days === time2.days && 
+           time1.hours === time2.hours && 
+           time1.minutes === time2.minutes && 
+           time1.seconds === time2.seconds;
+  };
+  
   // 计算剩余时间
   useEffect(() => {
+    // 清除之前的定时器
+    if (timerIdRef.current) {
+      clearInterval(timerIdRef.current);
+    }
+    
     const timer = getActiveTimer();
     if (!timer) return;
     
@@ -20,23 +37,33 @@ export default function CountdownDisplay() {
       const targetDate = new Date(timer.targetDate);
       const difference = targetDate - now;
       
+      // 当页面在后台时，requestAnimationFrame可能会暂停
+      // 这里检查页面可见性
+      if (document.visibilityState !== 'visible') {
+        return; // 如果页面不可见，不更新状态
+      }
+      
       if (difference <= 0) {
         // 倒计时结束
-        setIsFinished(true);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        
-        // 当倒计时结束时调用通知函数（重新设置以确保立即发送）
-        scheduleCountdownNotification({
-          id: timer.id,
-          title: timer.name,
-          targetTime: Date.now() // 设置为当前时间以立即触发
-        });
-        
+        if (!isFinished) {
+          setIsFinished(true);
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+          lastTimeRef.current = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+          
+          // 当倒计时结束时调用通知函数
+          scheduleCountdownNotification({
+            id: timer.id,
+            title: timer.name,
+            targetTime: Date.now() // 设置为当前时间以立即触发
+          });
+        }
         return;
       }
       
       // 倒计时未结束
-      setIsFinished(false);
+      if (isFinished) {
+        setIsFinished(false);
+      }
       
       // 计算天、时、分、秒
       const days = Math.floor(difference / (1000 * 60 * 60 * 24));
@@ -44,17 +71,36 @@ export default function CountdownDisplay() {
       const minutes = Math.floor((difference / 1000 / 60) % 60);
       const seconds = Math.floor((difference / 1000) % 60);
       
-      setTimeLeft({ days, hours, minutes, seconds });
-      setShowDays(days > 0);
+      const newTimeLeft = { days, hours, minutes, seconds };
+      
+      // 只有当时间真正变化时才更新状态，避免不必要的渲染
+      if (!areTimesEqual(newTimeLeft, lastTimeRef.current)) {
+        setTimeLeft(newTimeLeft);
+        lastTimeRef.current = newTimeLeft;
+        setShowDays(days > 0);
+      }
     };
     
     // 立即计算一次
     calculateTimeLeft();
     
+    // 处理页面可见性变化 - 当页面重新变为可见时重新计算时间
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        calculateTimeLeft();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     // 每秒更新一次
-    const interval = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(interval);
-  }, [getActiveTimer]);
+    timerIdRef.current = setInterval(calculateTimeLeft, 1000);
+    
+    return () => {
+      clearInterval(timerIdRef.current);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [getActiveTimer, isFinished]);
   
   // 格式化为两位数
   const formatNumber = (num) => {
