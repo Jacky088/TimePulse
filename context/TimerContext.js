@@ -37,11 +37,14 @@ const generateFixedHolidays = (year) => {
     // 国际节日 - 日期固定
     { name: `${year}年元旦`, date: createDateWithOffset(0, 1), color: '#1890FF' },
     { name: `${year}年情人节`, date: createDateWithOffset(1, 14), color: '#EB2F96' },
+    { name: `${year}年妇女节`, date: createDateWithOffset(2, 8), color: '#C71585' },
     { name: `${year}年植树节`, date: createDateWithOffset(2, 12), color: '#52C41A' },
     { name: `${year}年愚人节`, date: createDateWithOffset(3, 1), color: '#722ED1' },
+    { name: `${year}年青年节`, date: createDateWithOffset(4, 4), color: '#722ED1' },
     { name: `${year}年劳动节`, date: createDateWithOffset(4, 1), color: '#FA8C16' },
     { name: `${year}年清明节`, date: getQingmingDate(year).toISOString(), color: '#228B22' },
     { name: `${year}年儿童节`, date: createDateWithOffset(5, 1), color: '#13C2C2' },
+    { name: `${year}年建党节`, date: createDateWithOffset(6, 1), color: '#FF0000' },
     { name: `${year}年建军节`, date: createDateWithOffset(7, 1), color: '#CF1322' },
     { name: `${year}年教师节`, date: createDateWithOffset(8, 10), color: '#096DD9' },
     { name: `${year}年国庆节`, date: createDateWithOffset(9, 1), color: '#FF4D4F' },
@@ -107,8 +110,11 @@ const getChineseFestivals = (year) => {
     { name: `${year}年春节`, lunarMonth: 1, lunarDay: 1, color: '#FF0000' },
     { name: `${year}年元宵节`, lunarMonth: 1, lunarDay: 15, color: '#FF6347' },
     { name: `${year}年端午节`, lunarMonth: 5, lunarDay: 5, color: '#32CD32' },
+    { name: `${year}年七夕节`, lunarMonth: 7, lunarDay: 7, color: '#FF1493' },
+    { name: `${year}年中元节`, lunarMonth: 7, lunarDay: 15, color: '#708090' },
     { name: `${year}年中秋节`, lunarMonth: 8, lunarDay: 15, color: '#FFA500' },
     { name: `${year}年重阳节`, lunarMonth: 9, lunarDay: 9, color: '#800080' },
+    { name: `${year}年腊八节`, lunarMonth: 12, lunarDay: 8, color: '#8B4513' },
   ];
   
   holidaysMapping.forEach(holiday => {
