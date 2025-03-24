@@ -5,6 +5,7 @@ import { HexColorPicker } from 'react-colorful';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
 import CustomSelect from './CustomSelect';
+import { requestNotificationPermission } from '../../utils/shareUtils';
 
 // 丰富的预设颜色选择
 const presetColors = [
@@ -83,13 +84,16 @@ export default function AddTimerModal({ onClose }) {
       color: formData.color,
     };
     
-    addTimer(timerData);
-    setStep(3); // 进入完成步骤
-    
-    // 3秒后关闭弹窗
-    setTimeout(() => {
-      onClose();
-    }, 2000);
+    // 添加计时器前请求通知权限
+    requestNotificationPermission().then(() => {
+      addTimer(timerData);
+      setStep(3); // 进入完成步骤
+      
+      // 3秒后关闭弹窗
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    });
   };
   
   return (

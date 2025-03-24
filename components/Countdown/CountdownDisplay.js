@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimers } from '../../context/TimerContext';
 import DigitColumn from './DigitColumn';
+import { scheduleCountdownNotification } from '../../utils/notifications';
 
 export default function CountdownDisplay() {
   const { getActiveTimer } = useTimers();
@@ -24,13 +25,12 @@ export default function CountdownDisplay() {
         setIsFinished(true);
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         
-        // 发送通知
-        if (Notification.permission === 'granted') {
-          new Notification('TimePulse 倒计时完成', {
-            body: `${timer.name} 的倒计时已结束！`,
-            icon: '/favicon.ico'
-          });
-        }
+        // 当倒计时结束时调用通知函数（重新设置以确保立即发送）
+        scheduleCountdownNotification({
+          id: timer.id,
+          title: timer.name,
+          targetTime: Date.now() // 设置为当前时间以立即触发
+        });
         
         return;
       }

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { addDays, getYear, setYear } from 'date-fns';
 import { getFromRemoteCache, saveToRemoteCache } from '../utils/syncService';
+import { scheduleCountdownNotification, cancelCountdownNotification } from '../utils/notifications';
 
 const TimerContext = createContext();
 
@@ -248,11 +249,22 @@ export function TimerProvider({ children }) {
     
     setActiveTimerId(newTimer.id);
     console.log(`已添加计时器: ${newTimer.name} - ${new Date().toLocaleString()}`);
+    
+    // 为新计时器设置通知
+    scheduleCountdownNotification({
+      id: newTimer.id,
+      title: newTimer.name,
+      targetTime: new Date(newTimer.targetDate).getTime()
+    });
+    
     return newTimer.id;
   };
 
   // 删除计时器
   const deleteTimer = (id) => {
+    // 取消该计时器的通知
+    cancelCountdownNotification(id);
+    
     setTimers(prev => {
       const newTimers = prev.filter(timer => timer.id !== id);
       
@@ -275,11 +287,25 @@ export function TimerProvider({ children }) {
 
   // 更新计时器
   const updateTimer = (id, updatedData) => {
-    setTimers(prev => 
-      prev.map(timer => 
+    setTimers(prev => {
+      const newTimers = prev.map(timer => 
         timer.id === id ? { ...timer, ...updatedData } : timer
-      )
-    );
+      );
+      
+      // 获取更新后的计时器对象
+      const updatedTimer = newTimers.find(t => t.id === id);
+      
+      // 更新通知
+      if (updatedTimer) {
+        scheduleCountdownNotification({
+          id: updatedTimer.id,
+          title: updatedTimer.name,
+          targetTime: new Date(updatedTimer.targetDate).getTime()
+        });
+      }
+      
+      return newTimers;
+    });
     
     console.log(`已更新计时器ID: ${id} - ${new Date().toLocaleString()}`);
   };
