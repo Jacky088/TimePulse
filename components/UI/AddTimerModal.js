@@ -97,14 +97,14 @@ export default function AddTimerModal({ onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm overflow-y-auto py-4"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="glass-card w-full max-w-md m-4 p-6 rounded-2xl"
+        className="glass-card w-full max-w-md m-4 p-6 rounded-2xl max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {step === 1 && (
@@ -134,7 +134,7 @@ export default function AddTimerModal({ onClose }) {
                   {holidaysList.map((holiday, index) => (
                     <button
                       key={index}
-                      className="w-full p-2 mb-2 rounded-lg flex items-center justify-between hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
+                      className="w-full p-2 mb-2 rounded-lg flex items-center justify-between hover:bg-white/20 dark:hover:bg黑/20 transition-colors"
                       onClick={() => handleSelectHoliday(holiday)}
                       data-umami-event={`选择节假日-${holiday.name}`}
                     >
@@ -158,14 +158,14 @@ export default function AddTimerModal({ onClose }) {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="例如: 春节倒计时"
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg黑/10 backdrop-blur-sm border border-white/20 dark:border白/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                   required
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium mb-1">目标日期</label>
-                <div className="flex items-center bg-white/10 dark:bg-black/10 rounded-lg border border-white/20 dark:border-white/10">
+                <div className="flex items-center bg-white/10 dark:bg黑/10 rounded-lg border border-white/20 dark:border白/10">
                   <span className="pl-3 text-gray-500"><FiCalendar /></span>
                   <input
                     type="date"
