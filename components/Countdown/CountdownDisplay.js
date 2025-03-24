@@ -5,7 +5,7 @@ import DigitColumn from './DigitColumn';
 import { scheduleCountdownNotification } from '../../utils/notifications';
 
 export default function CountdownDisplay() {
-  const { getActiveTimer } = useTimers();
+  const { getActiveTimer, checkAndUpdateDefaultTimer } = useTimers();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [showDays, setShowDays] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
@@ -49,6 +49,11 @@ export default function CountdownDisplay() {
           setIsFinished(true);
           setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
           lastTimeRef.current = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+          
+          // 检查并更新过期的默认计时器
+          if (checkAndUpdateDefaultTimer) {
+            checkAndUpdateDefaultTimer();
+          }
           
           // 当倒计时结束时调用通知函数
           scheduleCountdownNotification({
@@ -100,7 +105,7 @@ export default function CountdownDisplay() {
       clearInterval(timerIdRef.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [getActiveTimer, isFinished]);
+  }, [getActiveTimer, isFinished, checkAndUpdateDefaultTimer]);
   
   // 格式化为两位数
   const formatNumber = (num) => {
