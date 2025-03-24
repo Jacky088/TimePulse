@@ -4,6 +4,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
   const [prevValue, setPrevValue] = useState(value);
   const [isChanging, setIsChanging] = useState(false);
+  const [isSafari, setIsSafari] = useState(false);
+  
+  // 检测Safari浏览器
+  useEffect(() => {
+    // 检测Safari浏览器
+    const isSafariBrowser = 
+      navigator.userAgent.indexOf('Safari') !== -1 && 
+      navigator.userAgent.indexOf('Chrome') === -1;
+    
+    // 检测iOS设备
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    setIsSafari(isSafariBrowser || isIOS);
+  }, []);
   
   // 监听数字变化
   useEffect(() => {
@@ -12,11 +26,11 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
       const timer = setTimeout(() => {
         setPrevValue(value);
         setIsChanging(false);
-      }, 300); // 动画持续时间
+      }, isSafari ? 200 : 300); // Safari上减少动画持续时间
       
       return () => clearTimeout(timer);
     }
-  }, [value, prevValue]);
+  }, [value, prevValue, isSafari]);
   
   // 根据数字位数确定宽度类名
   const getWidthClass = () => {
@@ -36,7 +50,11 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
         className={`${getWidthClass()} h-24 sm:h-32 md:h-36 rounded-xl glass-card flex items-center justify-center relative overflow-hidden`}
         style={{ 
           boxShadow: `0 0 30px ${color}20`,
-          transition: 'box-shadow 0.5s var(--transition-timing)'
+          transition: 'box-shadow 0.5s var(--transition-timing)',
+          // 添加硬件加速
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
+          willChange: "transform"
         }}
         whileHover={{ 
           boxShadow: `0 0 40px ${color}40`,
@@ -56,9 +74,15 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
                   initial={{ y: 0, opacity: 1 }}
                   animate={{ y: '-100%', opacity: 0 }}
                   exit={{ y: '-100%', opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  transition={{ duration: isSafari ? 0.2 : 0.3, ease: 'easeInOut' }}
                   className="absolute text-5xl sm:text-6xl md:text-7xl font-bold"
-                  style={{ color }}
+                  style={{ 
+                    color,
+                    // 添加硬件加速
+                    transform: "translateZ(0)",
+                    WebkitTransform: "translateZ(0)",
+                    willChange: "transform"
+                  }}
                 >
                   {prevValue}
                 </motion.span>
@@ -68,9 +92,15 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
                   key={`current-${value}`}
                   initial={{ y: '100%', opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  transition={{ duration: isSafari ? 0.2 : 0.3, ease: 'easeInOut' }}
                   className="absolute text-5xl sm:text-6xl md:text-7xl font-bold"
-                  style={{ color }}
+                  style={{ 
+                    color,
+                    // 添加硬件加速
+                    transform: "translateZ(0)",
+                    WebkitTransform: "translateZ(0)",
+                    willChange: "transform"
+                  }}
                 >
                   {value}
                 </motion.span>
@@ -79,7 +109,12 @@ export default function DigitColumn({ value, label, color = '#0ea5e9' }) {
               <motion.span
                 key={`static-${value}`}
                 className="text-5xl sm:text-6xl md:text-7xl font-bold"
-                style={{ color }}
+                style={{ 
+                  color,
+                  // 添加硬件加速
+                  transform: "translateZ(0)",
+                  WebkitTransform: "translateZ(0)"
+                }}
               >
                 {value}
               </motion.span>

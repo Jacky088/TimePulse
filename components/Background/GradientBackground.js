@@ -10,8 +10,22 @@ export default function GradientBackground() {
   const [prevTimerId, setPrevTimerId] = useState(null);
   const containerRef = useRef(null);
   const activeTimer = getActiveTimer();
+  const [isSafari, setIsSafari] = useState(false);
   
-  // 生成渐变圆圈
+  // 检测Safari浏览器
+  useEffect(() => {
+    // 检测Safari浏览器
+    const isSafariBrowser = 
+      navigator.userAgent.indexOf('Safari') !== -1 && 
+      navigator.userAgent.indexOf('Chrome') === -1;
+    
+    // 检测iOS设备
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    setIsSafari(isSafariBrowser || isIOS);
+  }, []);
+  
+  // 生成渐变圆圈 - 针对Safari减少圆圈数量和动画复杂度
   useEffect(() => {
     // 检查计时器是否变化
     const isNewTimer = activeTimerId !== prevTimerId;
@@ -23,19 +37,22 @@ export default function GradientBackground() {
     const baseColor = activeTimer?.color || '#0ea5e9';
     const colors = generateColors(baseColor, theme === 'dark');
     
+    // 针对Safari减少圆圈数量
+    const circleCount = 5
+    
     // 生成或更新圆圈配置
     if (circles.length === 0 || isNewTimer) {
       // 如果是新计时器或初始化，创建新圆圈
-      const newCircles = Array.from({ length: 5 }, (_, i) => ({
+      const newCircles = Array.from({ length: circleCount }, (_, i) => ({
         id: i,
         x: Math.random() * 100 - 30 + Math.random() * 40,
         y: Math.random() * 100 - 30 + Math.random() * 40,
         size: 30 + Math.random() * 40,
-        speedX: (Math.random() - 0.5) * 0.03,
-        speedY: (Math.random() - 0.5) * 0.03,
+        speedX: (Math.random() - 0.5) * (isSafari ? 0.01 : 0.03), // 降低Safari中的速度
+        speedY: (Math.random() - 0.5) * (isSafari ? 0.01 : 0.03), // 降低Safari中的速度
         color: colors[i % colors.length],
-        blur: 60 + Math.random() * 40,
-        opacity: 0.3 + Math.random() * 0.3
+        blur: isSafari ? 40 : (60 + Math.random() * 40), // 减少Safari中的模糊强度
+        opacity: 0.3 + Math.random() * (isSafari ? 0.2 : 0.3) // 降低Safari中的透明度变化
       }));
       setCircles(newCircles);
     } else if (activeTimer) {
@@ -46,7 +63,7 @@ export default function GradientBackground() {
         color: colors[i % colors.length]
       })));
     }
-  }, [activeTimerId, theme, activeTimer]);
+  }, [activeTimerId, theme, activeTimer, isSafari]);
   
   // 根据基础颜色生成一组和谐的颜色
   const generateColors = (baseColor, isDark) => {
@@ -98,11 +115,17 @@ export default function GradientBackground() {
               opacity: circle.opacity
             }}
             transition={{
-              left: { duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
-              top: { duration: 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
-              // 增加过渡持续时间，让颜色变化更平滑
-              backgroundColor: { duration: 2.5, ease: "easeOut" },
-              opacity: { duration: 0.8 }
+              left: { duration: isSafari ? 30 : 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
+              top: { duration: isSafari ? 30 : 20, ease: "linear", repeat: Infinity, repeatType: "reverse" },
+              // 增加Safari中的过渡持续时间，减少更新频率
+              backgroundColor: { duration: isSafari ? 3.5 : 2.5, ease: "easeOut" },
+              opacity: { duration: isSafari ? 1.2 : 0.8 }
+            }}
+            style={{
+              // 添加硬件加速属性
+              WebkitTransform: "translateZ(0)",
+              transform: "translateZ(0)",
+              willChange: "transform"
             }}
           />
         ))}

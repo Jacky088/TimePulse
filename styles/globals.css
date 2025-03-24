@@ -13,8 +13,8 @@
   --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 为所有元素添加色彩过渡效果 */
-* {
+/* 替换为所有元素的过渡效果，改为更具体的选择器，减少对性能的影响 */
+.transition-enabled {
   -webkit-transition: color var(--transition-duration) var(--transition-timing),
               background-color var(--transition-duration) var(--transition-timing),
               border-color var(--transition-duration) var(--transition-timing),
@@ -27,6 +27,45 @@
               -webkit-box-shadow var(--transition-duration) var(--transition-timing),
               box-shadow var(--transition-duration) var(--transition-timing),
               opacity var(--transition-duration) var(--transition-timing);
+}
+
+/* 为界面元素添加过渡效果，而不是所有元素 */
+button, a, input, select, .glass-card, .btn {
+  -webkit-transition: color var(--transition-duration) var(--transition-timing),
+              background-color var(--transition-duration) var(--transition-timing),
+              border-color var(--transition-duration) var(--transition-timing),
+              -webkit-box-shadow var(--transition-duration) var(--transition-timing),
+              box-shadow var(--transition-duration) var(--transition-timing),
+              opacity var(--transition-duration) var(--transition-timing);
+  transition: color var(--transition-duration) var(--transition-timing),
+              background-color var(--transition-duration) var(--transition-timing),
+              border-color var(--transition-duration) var(--transition-timing),
+              -webkit-box-shadow var(--transition-duration) var(--transition-timing),
+              box-shadow var(--transition-duration) var(--transition-timing),
+              opacity var(--transition-duration) var(--transition-timing);
+}
+
+/* Safari特定优化 */
+@media not all and (min-resolution:.001dpcm) { 
+  @supports (-webkit-appearance:none) {
+    /* 为Safari增加硬件加速 */
+    .glass-card, .moving-circle, .digit-column {
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+    
+    /* 减少Safari中的动画过渡持续时间 */
+    :root {
+      --transition-duration: 200ms;
+    }
+    
+    /* 禁用Safari中可能导致抖动的背景模糊效果 */
+    @supports (-webkit-backdrop-filter: blur(1px)) {
+      .glass-effect, .glass-card {
+        -webkit-backdrop-filter: blur(10px);
+      }
+    }
+  }
 }
 
 /* 为不支持CSS变量的浏览器提供备选值 */
@@ -83,6 +122,10 @@
 @layer components {
   .glass-card {
     @apply bg-white/70 dark:bg-black/30 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg text-gray-800 dark:text-gray-100;
+    /* 添加硬件加速，避免Safari中的抖动问题 */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
   }
   
   .btn {
@@ -99,6 +142,9 @@
   
   .digit-column {
     @apply relative overflow-hidden text-center;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
   }
   
   .backdrop-blur-xs {
@@ -117,11 +163,15 @@
   }
 }
 
-/* 动画效果 */
+/* 动画效果 - 优化Safari性能 */
 .animate-gradient {
   background-size: 400% 400%;
   -webkit-animation: gradient 15s ease infinite;
   animation: gradient 15s ease infinite;
+  /* 添加硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
 }
 
 @-webkit-keyframes gradient {
@@ -178,21 +228,27 @@
   50% { -webkit-transform: translateY(-10px); transform: translateY(-10px); }
 }
 
-/* 背景圆圈动画 */
+/* 背景圆圈动画 - 添加硬件加速减少Safari中的抖动 */
 .moving-circle {
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
   opacity: 0.5;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
 }
 
-/* 数字滚动动画 */
+/* 数字滚动动画 - 优化Safari性能 */
 .digit-wrapper {
   height: 1.2em;
   line-height: 1.2em;
   position: relative;
   overflow: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
 }
 
 .digit {
@@ -201,15 +257,19 @@
   left: 0;
   right: 0;
   bottom: 0;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
-/* 玻璃效果 */
+/* 玻璃效果 - 降低Safari中的模糊强度，提高性能 */
 .glass-effect {
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  backdrop-filter: blur(10px) saturate(180%);
   background-color: rgba(255, 255, 255, 0.75); /* 增加不透明度 */
   border: 1px solid rgba(200, 200, 200, 0.3); /* 增加边框可见度 */
   color: rgba(0, 0, 0, 0.8); /* 确保文字颜色 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* 为不支持backdrop-filter的浏览器提供替代样式 */
