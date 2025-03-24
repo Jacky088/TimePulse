@@ -3,11 +3,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { addDays, getYear, setYear } from 'date-fns';
 import { getFromRemoteCache, saveToRemoteCache } from '../utils/syncService';
 import { scheduleCountdownNotification, cancelCountdownNotification } from '../utils/notifications';
+import solarlunar from 'solarlunar';
 
 const TimerContext = createContext();
 
 // 获取当前年份
 const currentYear = new Date().getFullYear();
+
+// 添加计算清明节日期的辅助函数
+const getQingmingDate = (year) => {
+  // 使用公式计算清明节日期（大致公式）
+  const day = Math.floor((year - 2000) * 0.2422 + 4.81) - Math.floor((year - 2000) / 4);
+  return new Date(Date.UTC(year, 3, day)); // 四月：月索引为3
+};
 
 // 生成固定日期的节日列表，考虑时区调整
 const generateFixedHolidays = (year) => {
@@ -32,12 +40,12 @@ const generateFixedHolidays = (year) => {
     { name: `${year}年植树节`, date: createDateWithOffset(2, 12), color: '#52C41A' },
     { name: `${year}年愚人节`, date: createDateWithOffset(3, 1), color: '#722ED1' },
     { name: `${year}年劳动节`, date: createDateWithOffset(4, 1), color: '#FA8C16' },
+    { name: `${year}年清明节`, date: getQingmingDate(year).toISOString(), color: '#228B22' },
     { name: `${year}年儿童节`, date: createDateWithOffset(5, 1), color: '#13C2C2' },
     { name: `${year}年建军节`, date: createDateWithOffset(7, 1), color: '#CF1322' },
     { name: `${year}年教师节`, date: createDateWithOffset(8, 10), color: '#096DD9' },
     { name: `${year}年国庆节`, date: createDateWithOffset(9, 1), color: '#FF4D4F' },
     { name: `${year}年万圣节`, date: createDateWithOffset(9, 31), color: '#FF7A45' },
-    { name: `${year}年感恩节`, date: createDateWithOffset(10, 24), color: '#FAAD14' },
     { name: `${year}年平安夜`, date: createDateWithOffset(11, 24), color: '#36CFC9' },
     { name: `${year}年圣诞节`, date: createDateWithOffset(11, 25), color: '#F759AB' },
   ];
@@ -92,6 +100,32 @@ const calculateDynamicHolidays = (year) => {
   return holidays;
 };
 
+// 添加农历节日转换函数
+const getChineseFestivals = (year) => {
+  const lunarHolidays = [];
+  const holidaysMapping = [
+    { name: `${year}年春节`, lunarMonth: 1, lunarDay: 1, color: '#FF0000' },
+    { name: `${year}年元宵节`, lunarMonth: 1, lunarDay: 15, color: '#FF6347' },
+    { name: `${year}年端午节`, lunarMonth: 5, lunarDay: 5, color: '#32CD32' },
+    { name: `${year}年中秋节`, lunarMonth: 8, lunarDay: 15, color: '#FFA500' },
+    { name: `${year}年重阳节`, lunarMonth: 9, lunarDay: 9, color: '#800080' },
+  ];
+  
+  holidaysMapping.forEach(holiday => {
+    // 使用 solarlunar 将农历日期转换为公历日期
+    const solarDate = solarlunar.lunar2solar(year, holiday.lunarMonth, holiday.lunarDay, false);
+    // 构造 ISO 格式日期字符串，注意月-1
+    const date = new Date(Date.UTC(solarDate.cYear, solarDate.cMonth - 1, solarDate.cDay)).toISOString();
+    lunarHolidays.push({
+      name: holiday.name,
+      date: date,
+      color: holiday.color
+    });
+  });
+  
+  return lunarHolidays;
+};
+
 // 寻找下一个即将到来的节日
 const findNextHoliday = () => {
   const now = new Date();
@@ -102,8 +136,10 @@ const findNextHoliday = () => {
   const allHolidays = [
     ...generateFixedHolidays(currentYear),
     ...calculateDynamicHolidays(currentYear),
+    ...getChineseFestivals(currentYear),
     ...generateFixedHolidays(nextYear),
-    ...calculateDynamicHolidays(nextYear)
+    ...calculateDynamicHolidays(nextYear),
+    ...getChineseFestivals(nextYear)
   ];
   
   // 过滤出未来的节日并按日期排序
@@ -139,8 +175,10 @@ const getHolidaysList = () => {
   const allHolidays = [
     ...generateFixedHolidays(currentYear),
     ...calculateDynamicHolidays(currentYear),
+    ...getChineseFestivals(currentYear),
     ...generateFixedHolidays(nextYear),
-    ...calculateDynamicHolidays(nextYear)
+    ...calculateDynamicHolidays(nextYear),
+    ...getChineseFestivals(nextYear)
   ];
   
   // 过滤出未来的节日并按日期排序

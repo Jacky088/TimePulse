@@ -35,6 +35,9 @@ importers:
       react-intersection-observer:
         specifier: ^9.5.2
         version: 9.16.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      solarlunar:
+        specifier: ^2.0.7
+        version: 2.0.7
       use-sound:
         specifier: ^4.0.1
         version: 4.0.4(react@18.2.0)
@@ -603,6 +606,9 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
+
+  solarlunar@2.0.7:
+    resolution: {integrity: sha512-2SfuCCgAAxFU5MTMYuKGbRgRLcPTJQf3azMEw/GmBpHXA7N2eAQJStSqktZJjnq4qRCboBPnqEB866+PCregag==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -1195,6 +1201,8 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   signal-exit@4.1.0: {}
+
+  solarlunar@2.0.7: {}
 
   source-map-js@1.2.1: {}
 
