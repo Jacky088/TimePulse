@@ -15,8 +15,10 @@ export default function TimerDisplay() {
   // 使用 ref 跟踪最后计算的时间，避免不必要的重渲染
   const lastTimeRef = useRef({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const timerIdRef = useRef(null);
+  const syncTimerRef = useRef(null); // 高频同步定时器
   const startTimeRef = useRef(null);
   const pausedTimeRef = useRef(0); // 记录已暂停的总时间
+  const lastSecondRef = useRef(-1); // 记录上一次的秒数
   
   // 判断两个时间对象是否相等
   const areTimesEqual = (time1, time2) => {
@@ -26,6 +28,78 @@ export default function TimerDisplay() {
            time1.seconds === time2.seconds;
   };
 
+  // 自动对时系统 - 高精度时间同步
+  const startTimeSyncSystem = () => {
+    // 清除现有的定时器
+    if (syncTimerRef.current) {
+      clearInterval(syncTimerRef.current);
+    }
+    if (timerIdRef.current) {
+      clearInterval(timerIdRef.current);
+    }
+    
+    // 只在页面可见时启动高频检测
+    if (document.visibilityState !== 'visible') {
+      return;
+    }
+    
+    // 启动高频检测（每毫秒检测一次）
+    syncTimerRef.current = setInterval(() => {
+      // 再次检查页面可见性
+      if (document.visibilityState !== 'visible') {
+        clearInterval(syncTimerRef.current);
+        clearInterval(timerIdRef.current);
+        return;
+      }
+      
+      const now = new Date();
+      const currentSecond = now.getSeconds();
+      
+      // 检测秒数是否发生变化
+      if (currentSecond !== lastSecondRef.current) {
+        lastSecondRef.current = currentSecond;
+        
+        // 秒数变化时立即执行计时逻辑
+        const timer = getActiveTimer();
+        if (timer) {
+          calculateTime(timer);
+        }
+        
+        // 重新启动1秒间隔的定时器，与系统时间同步
+        if (timerIdRef.current) {
+          clearInterval(timerIdRef.current);
+        }
+        
+        timerIdRef.current = setInterval(() => {
+          const activeTimer = getActiveTimer();
+          if (activeTimer && document.visibilityState === 'visible') {
+            calculateTime(activeTimer);
+          }
+        }, 1000);
+      }
+    }, 1);
+  };
+  
+  // 统一的计时计算函数
+  const calculateTime = (timer) => {
+    // 当页面在后台时，可能会暂停
+    if (document.visibilityState !== 'visible') {
+      return;
+    }
+    
+    switch (timer.type) {
+      case 'stopwatch':
+        calculateStopwatchTime(timer);
+        break;
+      case 'worldclock':
+        calculateWorldClockTime(timer);
+        break;
+      default: // countdown
+        calculateCountdownTime(timer);
+        break;
+    }
+  };
+  
   // 判断是否只有秒数变化（避免分钟数字不必要的重新渲染）
   const isOnlySecondsChanged = (time1, time2) => {
     return time1.days === time2.days && 
@@ -156,6 +230,9 @@ export default function TimerDisplay() {
     if (timerIdRef.current) {
       clearInterval(timerIdRef.current);
     }
+    if (syncTimerRef.current) {
+      clearInterval(syncTimerRef.current);
+    }
     
     const timer = getActiveTimer();
     if (!timer) return;
@@ -166,42 +243,32 @@ export default function TimerDisplay() {
       pausedTimeRef.current = timer.totalPausedTime || 0;
     }
     
-    const calculateTime = () => {
-      // 当页面在后台时，可能会暂停
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-      
-      switch (timer.type) {
-        case 'stopwatch':
-          calculateStopwatchTime(timer);
-          break;
-        case 'worldclock':
-          calculateWorldClockTime(timer);
-          break;
-        default: // countdown
-          calculateCountdownTime(timer);
-          break;
-      }
-    };
+    // 初始化当前秒数
+    lastSecondRef.current = new Date().getSeconds();
     
     // 立即计算一次
-    calculateTime();
+    calculateTime(timer);
+    
+    // 启动自动对时系统
+    startTimeSyncSystem();
     
     // 处理页面可见性变化
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        calculateTime();
+        // 页面重新可见时，重新启动对时系统
+        const activeTimer = getActiveTimer();
+        if (activeTimer) {
+          calculateTime(activeTimer);
+          startTimeSyncSystem();
+        }
       }
     };
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // 每秒更新一次
-    timerIdRef.current = setInterval(calculateTime, 1000);
-    
     return () => {
       clearInterval(timerIdRef.current);
+      clearInterval(syncTimerRef.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [getActiveTimer, isFinished, checkAndUpdateDefaultTimer, isRunning]);
