@@ -50,6 +50,8 @@ TimePulse 是一个具有现代化 UI 和交互的倒计时网页应用，支持
 
 ## 快速开始
 > 作为Nextjs纯前端项目，可以在任何支持托管Next.js(或Nodejs)的平台上部署。
+>
+> 另外，你也可以下载 [Releases](https://github.com/RavelloH/TimePulse/releases) 中的静态预构建资源（形如site-vx.x.x.zip），将其部署在Github Pages、Cloudflare Pages或其他任何静态托管服务商上
 
 ### Vercel一键部署
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FRavelloH%2FTimePulse)
