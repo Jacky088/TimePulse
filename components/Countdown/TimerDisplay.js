@@ -43,33 +43,36 @@ export default function TimerDisplay() {
       return;
     }
     
+    // 获取当前秒数作为基准
+    const now = new Date();
+    lastSecondRef.current = now.getSeconds();
+    
     // 启动高频检测（每毫秒检测一次）
     syncTimerRef.current = setInterval(() => {
-      // 再次检查页面可见性
+      // 检查页面可见性
       if (document.visibilityState !== 'visible') {
         clearInterval(syncTimerRef.current);
         clearInterval(timerIdRef.current);
         return;
       }
       
-      const now = new Date();
-      const currentSecond = now.getSeconds();
+      const currentTime = new Date();
+      const currentSecond = currentTime.getSeconds();
       
       // 检测秒数是否发生变化
       if (currentSecond !== lastSecondRef.current) {
         lastSecondRef.current = currentSecond;
         
-        // 秒数变化时立即执行计时逻辑
+        // 清除高频检测，因为我们已经同步到秒数变化了
+        clearInterval(syncTimerRef.current);
+        
+        // 秒数变化时立即执行一次主进程
         const timer = getActiveTimer();
         if (timer) {
           calculateTime(timer);
         }
         
-        // 重新启动1秒间隔的定时器，与系统时间同步
-        if (timerIdRef.current) {
-          clearInterval(timerIdRef.current);
-        }
-        
+        // 设置循环间隔1000ms运行主进程
         timerIdRef.current = setInterval(() => {
           const activeTimer = getActiveTimer();
           if (activeTimer && document.visibilityState === 'visible') {
@@ -243,22 +246,21 @@ export default function TimerDisplay() {
       pausedTimeRef.current = timer.totalPausedTime || 0;
     }
     
-    // 初始化当前秒数
-    lastSecondRef.current = new Date().getSeconds();
-    
-    // 立即计算一次
+    // 步骤1：刚打开页面/切换计时器时，执行一次主进程
     calculateTime(timer);
     
-    // 启动自动对时系统
+    // 步骤2：然后开始高频检测
     startTimeSyncSystem();
     
     // 处理页面可见性变化
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // 页面重新可见时，重新启动对时系统
+        // 页面重新可见时，重新执行步骤1和2
         const activeTimer = getActiveTimer();
         if (activeTimer) {
+          // 步骤1：执行一次主进程
           calculateTime(activeTimer);
+          // 步骤2：开始高频检测
           startTimeSyncSystem();
         }
       }

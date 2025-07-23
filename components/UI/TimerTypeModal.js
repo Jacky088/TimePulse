@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FiX, FiClock, FiPlay, FiGlobe } from 'react-icons/fi';
+import { FiX, FiClock, FiPlayCircle, FiGlobe } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function TimerTypeModal({ onClose, onSelectType }) {
@@ -17,7 +17,7 @@ export default function TimerTypeModal({ onClose, onSelectType }) {
       id: 'stopwatch',
       name: '正计时',
       description: '从零开始计时，记录经过时间',
-      icon: FiPlay,
+      icon: FiPlayCircle,
       color: '#52C41A',
     },
     {
