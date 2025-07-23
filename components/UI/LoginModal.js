@@ -380,14 +380,6 @@ export default function LoginModal({ onClose }) {
                     readOnly
                     className="flex-1 px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                   />
-                  <button
-                    className="ml-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
-                    onClick={() => setPassword(Math.random().toString(36).substring(2, 10))}
-                    data-umami-event="重新生成密码"
-                    disabled={isLoading}
-                  >
-                    <FiLock />
-                  </button>
                 </div>
               </div>
               
