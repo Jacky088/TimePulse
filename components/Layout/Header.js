@@ -38,24 +38,42 @@ export default function Header() {
 
   // 开始编辑计时器
   const startEditTimer = (timer) => {
-    setEditingTimer({
-      ...timer,
-      targetDate: new Date(timer.targetDate).toISOString().substring(0, 10),
-      targetTime: new Date(timer.targetDate).toTimeString().substring(0, 5)
-    });
+    if (timer.type === 'countdown' || !timer.type) {
+      // 倒计时可以编辑所有属性
+      setEditingTimer({
+        ...timer,
+        targetDate: new Date(timer.targetDate).toISOString().substring(0, 10),
+        targetTime: new Date(timer.targetDate).toTimeString().substring(0, 5)
+      });
+    } else {
+      // 正计时和世界时钟只能编辑名字和颜色
+      setEditingTimer({
+        ...timer,
+        isLimitedEdit: true // 标记为限制编辑模式
+      });
+    }
   };
 
   // 保存编辑的计时器
   const saveEditedTimer = () => {
     if (!editingTimer) return;
     
-    const targetDateObj = new Date(`${editingTimer.targetDate}T${editingTimer.targetTime}`);
-    
-    updateTimer(editingTimer.id, {
-      name: editingTimer.name,
-      targetDate: targetDateObj.toISOString(),
-      color: editingTimer.color
-    });
+    if (editingTimer.isLimitedEdit) {
+      // 限制编辑模式：只更新名字和颜色
+      updateTimer(editingTimer.id, {
+        name: editingTimer.name,
+        color: editingTimer.color
+      });
+    } else {
+      // 完整编辑模式：更新所有属性（倒计时）
+      const targetDateObj = new Date(`${editingTimer.targetDate}T${editingTimer.targetTime}`);
+      
+      updateTimer(editingTimer.id, {
+        name: editingTimer.name,
+        targetDate: targetDateObj.toISOString(),
+        color: editingTimer.color
+      });
+    }
     
     setEditingTimer(null);
     setShowColorPicker(false);
@@ -262,7 +280,9 @@ export default function Header() {
 
               {editingTimer ? (
                 <div className="space-y-4">
-                  <h3 className="font-medium mb-2">编辑计时器</h3>
+                  <h3 className="font-medium mb-2">
+                    {editingTimer.isLimitedEdit ? '编辑计时器' : '编辑倒计时'}
+                  </h3>
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">名称</label>
@@ -274,25 +294,30 @@ export default function Header() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">日期</label>
-                    <input
-                      type="date"
-                      value={editingTimer.targetDate}
-                      onChange={(e) => setEditingTimer({...editingTimer, targetDate: e.target.value})}
-                      className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
-                    />
-                  </div>
+                  {/* 只有倒计时可以编辑日期和时间 */}
+                  {!editingTimer.isLimitedEdit && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">日期</label>
+                        <input
+                          type="date"
+                          value={editingTimer.targetDate}
+                          onChange={(e) => setEditingTimer({...editingTimer, targetDate: e.target.value})}
+                          className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">时间</label>
-                    <input
-                      type="time"
-                      value={editingTimer.targetTime}
-                      onChange={(e) => setEditingTimer({...editingTimer, targetTime: e.target.value})}
-                      className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
-                    />
-                  </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">时间</label>
+                        <input
+                          type="time"
+                          value={editingTimer.targetTime}
+                          onChange={(e) => setEditingTimer({...editingTimer, targetTime: e.target.value})}
+                          className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                        />
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium mb-1">颜色</label>
@@ -342,10 +367,16 @@ export default function Header() {
                       <div>
                         <h3 className="font-medium">{timer.name}</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(timer.targetDate).toLocaleString()}
+                          {timer.type === 'stopwatch' 
+                            ? '正计时器' 
+                            : timer.type === 'worldclock' 
+                            ? `${timer.country || '世界时间'} - ${timer.timezone || ''}`
+                            : new Date(timer.targetDate).toLocaleString()
+                          }
                         </p>
                       </div>
                       <div className="flex space-x-2">
+                        {/* 所有计时器都可以编辑名字和颜色 */}
                         <button
                           className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 cursor-pointer"
                           onClick={() => startEditTimer(timer)}
