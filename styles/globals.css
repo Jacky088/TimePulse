@@ -339,6 +339,15 @@ button, a, input, select, .glass-card, .btn {
               border-color 0.5s var(--transition-timing, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
+/* 隐藏横向滚动条的工具类 */
+.hide-horizontal-scrollbar {
+  overflow-x: hidden;
+}
+
+.hide-horizontal-scrollbar::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
 /* 自定义滚动条样式 - Webkit浏览器 (Chrome, Safari, Edge等) */
 ::-webkit-scrollbar {
   width: 8px;

@@ -10,7 +10,7 @@ export default function Layout({ children }) {
   const [showFooter, setShowFooter] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   
-  // 页面滚动时，Footer的透明度
+  // 页面滚动时，Footer的透明度和z-index
   const footerOpacity = useTransform(
     scrollYProgress, 
     [0, 0.8, 0.9, 1], 
@@ -21,6 +21,13 @@ export default function Layout({ children }) {
     scrollYProgress, 
     [0.8, 1], 
     [0, 16]
+  );
+  
+  // Footer的z-index随滚动逐渐增加
+  const footerZIndex = useTransform(
+    scrollYProgress,
+    [0, 0.3, 0.8, 1],
+    [1, 5, 15, 30]
   );
   
   // 监听滚动到底部事件
@@ -71,9 +78,10 @@ export default function Layout({ children }) {
           style={{ 
             opacity: footerOpacity,
             backdropFilter: `blur(${footerBlur.get()}px)`,
+            zIndex: footerZIndex,
             pointerEvents: showFooter ? 'auto' : 'none'
           }} 
-          className="fixed inset-0 z-10 flex items-center justify-center overflow-y-auto"
+          className="fixed inset-0 flex items-center justify-center overflow-y-auto"
         >
           <div className="w-full">
             <Footer />
