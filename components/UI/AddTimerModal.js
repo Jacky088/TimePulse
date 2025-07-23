@@ -178,14 +178,14 @@ export default function AddTimerModal({ onClose }) {
               
               <div>
                 <label className="block text-sm font-medium mb-1">目标日期</label>
-                <div className="flex items-center bg-white/10 dark:bg-black/10 rounded-lg border border-white/20 dark:border-white/10">
-                  <span className="pl-3 text-gray-500"><FiCalendar /></span>
+                <div className="flex items-center">
+                  <span className="absolute pl-3 text-gray-500 z-10"><FiCalendar /></span>
                   <input
                     type="date"
                     name="targetDate"
                     value={formData.targetDate}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none rounded-lg"
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     required
                   />
                 </div>
@@ -193,14 +193,14 @@ export default function AddTimerModal({ onClose }) {
               
               <div>
                 <label className="block text-sm font-medium mb-1">目标时间</label>
-                <div className="flex items-center bg-white/10 dark:bg-black/10 rounded-lg border border-white/20 dark:border-white/10">
-                  <span className="pl-3 text-gray-500"><FiClock /></span>
+                <div className="flex items-center">
+                  <span className="absolute pl-3 text-gray-500 z-10"><FiClock /></span>
                   <input
                     type="time"
                     name="targetTime"
                     value={formData.targetTime}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-transparent focus:ring-2 focus:ring-primary-500 focus:outline-none rounded-lg"
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     required
                   />
                 </div>

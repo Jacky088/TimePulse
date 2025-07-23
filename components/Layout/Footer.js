@@ -130,12 +130,12 @@ export default function Footer() {
               <FiClock className="mr-2" /> 运行日志
             </h2>
             
-            <div className="bg-black/30 rounded-lg p-2 mb-2">
+            <div className="bg-gray-200/50 dark:bg-black/30 rounded-lg p-2 mb-2">
               <p className="text-xs font-mono">当前时间: {currentTime}</p>
             </div>
             
             {/* 减少移动设备上的日志高度 */}
-            <div className="h-24 sm:h-32 md:h-48 overflow-y-auto bg-black/30 rounded-lg p-2 font-mono text-xs">
+            <div className="h-24 sm:h-32 md:h-48 overflow-y-auto bg-gray-200/50 dark:bg-black/30 rounded-lg p-2 font-mono text-xs">
               {logs.length > 0 ? (
                 logs.map((log, index) => (
                   <motion.div 
