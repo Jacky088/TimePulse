@@ -1,29 +1,31 @@
 import { motion } from 'framer-motion';
 import { FiX, FiClock, FiPlayCircle, FiGlobe } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function TimerTypeModal({ onClose, onSelectType }) {
   const { accentColor } = useTheme();
+  const { t } = useTranslation();
 
   const timerTypes = [
     {
       id: 'countdown',
-      name: '倒计时',
-      description: '设置目标时间，倒数到零',
+      name: t('timer.countdown', '倒计时'),
+      description: t('timer.countdownDesc', '设置目标时间，倒数到零'),
       icon: FiClock,
       color: '#FF4D4F',
     },
     {
       id: 'stopwatch',
-      name: '正计时',
-      description: '从零开始计时，记录经过时间',
+      name: t('timer.stopwatch', '正计时'),
+      description: t('timer.stopwatchDesc', '从零开始计时，记录经过时间'),
       icon: FiPlayCircle,
       color: '#52C41A',
     },
     {
       id: 'worldclock',
-      name: '世界时间',
-      description: '显示不同时区的当前时间',
+      name: t('timer.worldClock', '世界时间'),
+      description: t('timer.worldClockDesc', '显示不同时区的当前时间'),
       icon: FiGlobe,
       color: '#1890FF',
     },
@@ -45,7 +47,7 @@ export default function TimerTypeModal({ onClose, onSelectType }) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">选择计时器类型</h2>
+          <h2 className="text-2xl font-semibold">{t('timer.selectType', '选择计时器类型')}</h2>
           <button
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={onClose}
@@ -90,7 +92,7 @@ export default function TimerTypeModal({ onClose, onSelectType }) {
             className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
             onClick={onClose}
           >
-            取消
+            {t('common.cancel', '取消')}
           </button>
         </div>
       </motion.div>

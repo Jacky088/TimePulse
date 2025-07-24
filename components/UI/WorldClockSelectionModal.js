@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiX, FiSearch, FiMapPin } from 'react-icons/fi';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // 常用世界时钟预设
 const popularWorldClocks = [
@@ -217,23 +218,44 @@ const allTimezones = [
 ];
 
 export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAll, setShowAll] = useState(false);
 
+  // 翻译城市名
+  const getTranslatedCity = (city, timezone) => {
+    // 将时区转换为翻译键格式
+    const key = `timezone.${timezone.replace(/\//g, '_').replace(/\-/g, '_')}`;
+    return t(key, city);
+  };
+
+  // 翻译国家名
+  const getTranslatedCountry = (country) => {
+    const countryKey = `country.${country}`;
+    return t(countryKey, country);
+  };
+
   // 过滤时区
-  const filteredTimezones = allTimezones.filter(tz => 
-    tz.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tz.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tz.timezone.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTimezones = allTimezones.filter(tz => {
+    const translatedCity = getTranslatedCity(tz.city, tz.timezone);
+    const translatedCountry = getTranslatedCountry(tz.country);
+    const searchLower = searchTerm.toLowerCase();
+    
+    return translatedCity.toLowerCase().includes(searchLower) ||
+           translatedCountry.toLowerCase().includes(searchLower) ||
+           tz.city.toLowerCase().includes(searchLower) ||
+           tz.country.toLowerCase().includes(searchLower) ||
+           tz.timezone.toLowerCase().includes(searchLower);
+  });
 
   // 处理选择常用世界时钟
   const handleSelectPopular = (worldClock) => {
+    const translatedCity = getTranslatedCity(worldClock.name, worldClock.timezone);
     onSelectWorldClock({
-      name: `${worldClock.name}时间`, // 默认名称，用户可以修改
+      name: `${translatedCity}${t('timer.time', '时间')}`, // 默认名称，用户可以修改
       timezone: worldClock.timezone,
-      city: worldClock.name,
-      country: worldClock.country,
+      city: translatedCity,
+      country: getTranslatedCountry(worldClock.country),
       color: worldClock.color,
       // 不要直接跳到下一步，让用户可以修改名称
       skipToColorStep: false
@@ -246,11 +268,12 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
     const colors = ['#1890FF', '#52C41A', '#722ED1', '#13C2C2', '#FA8C16', '#FAAD14', '#F759AB', '#FF7A45'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     
+    const translatedCity = getTranslatedCity(tz.city, tz.timezone);
     onSelectWorldClock({
-      name: `${tz.city}时间`, // 默认名称，用户可以修改
+      name: `${translatedCity}${t('timer.time', '时间')}`, // 默认名称，用户可以修改
       timezone: tz.timezone,
-      city: tz.city,
-      country: tz.country,
+      city: translatedCity,
+      country: getTranslatedCountry(tz.country),
       color: randomColor,
       // 不要直接跳到下一步，让用户可以修改名称
       skipToColorStep: false
@@ -273,7 +296,7 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">选择世界时间</h2>
+          <h2 className="text-2xl font-semibold">{t('modal.addWorldClock.selectWorldClock', '选择世界时间')}</h2>
           <button
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={onClose}
@@ -284,16 +307,20 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
 
         {!showAll && (
           <>
-            <h3 className="text-lg font-medium mb-4">常用城市</h3>
+            <h3 className="text-lg font-medium mb-4">{t('modal.addWorldClock.popularCities', '常用城市')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 overflow-x-hidden">
-              {popularWorldClocks.map((worldClock) => (
+              {popularWorldClocks.map((worldClock) => {
+                const translatedCity = getTranslatedCity(worldClock.name, worldClock.timezone);
+                const translatedCountry = getTranslatedCountry(worldClock.country);
+                
+                return (
                 <motion.button
                   key={worldClock.id}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="p-3 rounded-lg glass-card hover:bg-white/10 dark:hover:bg-black/10 transition-colors text-left min-w-0"
                   onClick={() => handleSelectPopular(worldClock)}
-                  data-umami-event={`选择常用世界时间-${worldClock.name}`}
+                  data-umami-event={`选择常用世界时间-${translatedCity}`}
                 >
                   <div className="flex items-center space-x-3 min-w-0">
                     <div 
@@ -303,14 +330,15 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
                       <FiMapPin className="text-sm" />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium truncate">{worldClock.name}</div>
+                      <div className="font-medium truncate">{translatedCity}</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        {worldClock.country}
+                        {translatedCountry}
                       </div>
                     </div>
                   </div>
                 </motion.button>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex justify-center">
@@ -319,7 +347,7 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
                 onClick={() => setShowAll(true)}
                 data-umami-event="查看所有时区"
               >
-                查看更多时区
+                {t('modal.addWorldClock.viewMoreTimezones', '查看更多时区')}
               </button>
             </div>
           </>
@@ -332,7 +360,7 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="搜索城市或国家..."
+                  placeholder={t('modal.timezone.search', '搜索城市或国家...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
@@ -342,21 +370,26 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
 
             <div className="max-h-96 overflow-y-auto overflow-x-hidden">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {filteredTimezones.map((tz, index) => (
+                {filteredTimezones.map((tz, index) => {
+                  const translatedCity = getTranslatedCity(tz.city, tz.timezone);
+                  const translatedCountry = getTranslatedCountry(tz.country);
+                  
+                  return (
                   <motion.button
                     key={index}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="p-2 rounded-lg hover:bg-white/10 dark:hover:bg-black/10 transition-colors text-left min-w-0"
                     onClick={() => handleSelectTimezone(tz)}
-                    data-umami-event={`选择时区-${tz.city}`}
+                    data-umami-event={`选择时区-${translatedCity}`}
                   >
-                    <div className="font-medium truncate">{tz.city}</div>
+                    <div className="font-medium truncate">{translatedCity}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                      {tz.country} - {tz.timezone}
+                      {translatedCountry} - {tz.timezone}
                     </div>
                   </motion.button>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -365,7 +398,7 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
                 className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                 onClick={() => setShowAll(false)}
               >
-                返回常用城市
+                {t('modal.addWorldClock.backToPopular', '返回常用城市')}
               </button>
             </div>
           </>
@@ -376,7 +409,7 @@ export default function WorldClockSelectionModal({ onClose, onSelectWorldClock }
             className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
             onClick={onClose}
           >
-            取消
+            {t('common.cancel', '取消')}
           </button>
         </div>
       </motion.div>

@@ -4,6 +4,7 @@ import { FiX, FiCalendar, FiClock, FiGlobe, FiCheck } from 'react-icons/fi';
 import { HexColorPicker } from 'react-colorful';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import CustomSelect from './CustomSelect';
 import TimezoneSelectionModal from './TimezoneSelectionModal';
 import { requestNotificationPermission } from '../../utils/shareUtils';
@@ -35,6 +36,7 @@ const presetColors = [
 export default function AddTimerModal({ onClose }) {
   const { addTimer, holidaysList } = useTimers();
   const { accentColor } = useTheme();
+  const { t } = useTranslation();
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showHolidaysList, setShowHolidaysList] = useState(false);
   const [showTimezoneModal, setShowTimezoneModal] = useState(false);
@@ -123,7 +125,7 @@ export default function AddTimerModal({ onClose }) {
         {step === 1 && (
           <>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">创建倒计时</h2>
+              <h2 className="text-2xl font-semibold">{t('modal.countdown.create', '创建倒计时')}</h2>
               <button
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={onClose}
@@ -139,7 +141,7 @@ export default function AddTimerModal({ onClose }) {
                 data-umami-event="查看节假日列表"
               >
                 <FiCalendar className="mr-2 text-primary-500" />
-                <span>选择常用节假日</span>
+                <span>{t('modal.countdown.selectHoliday', '选择常用节假日')}</span>
               </button>
               
               {showHolidaysList && (
@@ -164,20 +166,20 @@ export default function AddTimerModal({ onClose }) {
             
             <form className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">计时器名称</label>
+                <label className="block text-sm font-medium mb-1">{t('modal.countdown.name', '计时器名称')}</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="例如: 春节倒计时"
+                  placeholder={t('modal.countdown.namePlaceholder', '例如: 春节倒计时')}
                   className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">目标日期</label>
+                <label className="block text-sm font-medium mb-1">{t('modal.countdown.date', '目标日期')}</label>
                 <div className="flex items-center">
                   <span className="absolute pl-3 text-gray-500 z-10"><FiCalendar /></span>
                   <input
@@ -192,7 +194,7 @@ export default function AddTimerModal({ onClose }) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">目标时间</label>
+                <label className="block text-sm font-medium mb-1">{t('modal.countdown.time', '目标时间')}</label>
                 <div className="flex items-center">
                   <span className="absolute pl-3 text-gray-500 z-10"><FiClock /></span>
                   <input
@@ -207,7 +209,7 @@ export default function AddTimerModal({ onClose }) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">时区</label>
+                <label className="block text-sm font-medium mb-1">{t('modal.timezone.title', '时区')}</label>
                 <button
                   type="button"
                   className="w-full flex items-center justify-between px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-black/20 transition-colors"
@@ -216,11 +218,11 @@ export default function AddTimerModal({ onClose }) {
                   <div className="flex items-center">
                     <FiGlobe className="mr-2 text-gray-400" />
                     <span className="text-sm">
-                      {formData.timezone === 'Asia/Shanghai' ? '中国标准时间 (UTC+8)' :
-                       formData.timezone === 'America/New_York' ? '美国东部时间' :
-                       formData.timezone === 'Europe/London' ? '英国时间' :
-                       formData.timezone === 'Europe/Paris' ? '欧洲中部时间' :
-                       formData.timezone === 'Asia/Tokyo' ? '日本时间' :
+                      {formData.timezone === 'Asia/Shanghai' ? t('modal.timezone.chinaTime', '中国标准时间 (UTC+8)') :
+                       formData.timezone === 'America/New_York' ? t('modal.timezone.eastTime', '美国东部时间') :
+                       formData.timezone === 'Europe/London' ? t('modal.timezone.ukTime', '英国时间') :
+                       formData.timezone === 'Europe/Paris' ? t('modal.timezone.centralEuropeTime', '欧洲中部时间') :
+                       formData.timezone === 'Asia/Tokyo' ? t('modal.timezone.japanTime', '日本时间') :
                        formData.timezone}
                     </span>
                   </div>
@@ -233,7 +235,7 @@ export default function AddTimerModal({ onClose }) {
                 className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                 onClick={onClose}
               >
-                取消
+                {t('common.cancel', '取消')}
               </button>
               <button
                 className="px-4 py-2 rounded-lg text-white"
@@ -242,7 +244,7 @@ export default function AddTimerModal({ onClose }) {
                 disabled={!formData.name || !formData.targetDate || !formData.targetTime}
                 data-umami-event="下一步-选择颜色"
               >
-                下一步
+                {t('common.next', '下一步')}
               </button>
             </div>
           </>
@@ -251,7 +253,7 @@ export default function AddTimerModal({ onClose }) {
         {step === 2 && (
           <>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">选择颜色</h2>
+              <h2 className="text-2xl font-semibold">{t('modal.countdown.selectColor', '选择颜色')}</h2>
               <button
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={onClose}
@@ -290,7 +292,7 @@ export default function AddTimerModal({ onClose }) {
                 className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                 onClick={() => setStep(1)}
               >
-                上一步
+                {t('common.previous', '上一步')}
               </button>
               <button
                 className="px-4 py-2 rounded-lg text-white"
@@ -298,7 +300,7 @@ export default function AddTimerModal({ onClose }) {
                 onClick={handleSubmit}
                 data-umami-event="创建计时器-确认"
               >
-                创建
+                {t('common.create', '创建')}
               </button>
             </div>
           </>
@@ -313,8 +315,8 @@ export default function AddTimerModal({ onClose }) {
             >
               <FiCheck className="text-white text-3xl" />
             </motion.div>
-            <h2 className="text-2xl font-semibold mb-2">倒计时已创建</h2>
-            <p className="text-gray-500 dark:text-gray-400">您的倒计时已成功创建</p>
+            <h2 className="text-2xl font-semibold mb-2">{t('modal.countdown.created', '倒计时已创建')}</h2>
+            <p className="text-gray-500 dark:text-gray-400">{t('modal.countdown.createdDesc', '您的倒计时已成功创建')}</p>
           </div>
         )}
       </motion.div>
@@ -324,7 +326,7 @@ export default function AddTimerModal({ onClose }) {
         <TimezoneSelectionModal
           onClose={() => setShowTimezoneModal(false)}
           onSelectTimezone={handleTimezoneSelect}
-          title="选择时区"
+          title={t('modal.timezone.title', '选择时区')}
         />
       )}
     </motion.div>

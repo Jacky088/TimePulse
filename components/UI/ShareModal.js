@@ -4,12 +4,14 @@ import { FiX, FiCopy, FiShare2, FiCheck, FiList } from 'react-icons/fi';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import { createShareUrl } from '../../utils/shareUtils';
 import CustomSelect from './CustomSelect';
 
 export default function ShareModal({ onClose }) {
   const { timers, activeTimerId } = useTimers();
   const { accentColor } = useTheme();
+  const { t } = useTranslation();
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [selectedTimer, setSelectedTimer] = useState(activeTimerId);
@@ -36,7 +38,7 @@ export default function ShareModal({ onClose }) {
         setTimeout(() => setCopied(false), 2000);
       })
       .catch(err => {
-        console.error('无法复制URL: ', err);
+        console.error(t('share.copyError', '无法复制URL: '), err);
       });
   };
   
@@ -44,16 +46,16 @@ export default function ShareModal({ onClose }) {
   const handleWebShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: '查看我的TimePulse倒计时',
-        text: '我分享了一个倒计时，点击链接查看',
+        title: t('share.shareTitle', '查看我的TimePulse倒计时'),
+        text: t('share.shareText', '我分享了一个倒计时，点击链接查看'),
         url: shareUrl
       })
       .catch(err => {
-        console.log('分享失败:', err);
+        console.log(t('share.shareError', '分享失败:'), err);
       });
     }
   };
-  
+
   // 处理选择下拉菜单改变
   const handleSelectChange = (e) => {
     if (e.target.value === 'all') {
@@ -63,17 +65,15 @@ export default function ShareModal({ onClose }) {
       setSelectedTimer(e.target.value);
     }
   };
-  
+
   // 创建下拉菜单选项
   const selectOptions = [
-    { value: 'all', label: '分享所有计时器' },
+    { value: 'all', label: t('share.shareAll', '分享所有计时器') },
     ...timers.map(timer => ({
       value: timer.id,
       label: timer.name
     }))
-  ];
-  
-  return (
+  ];  return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -89,7 +89,7 @@ export default function ShareModal({ onClose }) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">分享倒计时</h2>
+          <h2 className="text-2xl font-semibold">{t('share.title')}</h2>
           <button
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={onClose}
@@ -104,15 +104,15 @@ export default function ShareModal({ onClose }) {
             value={shareAll ? 'all' : selectedTimer}
             onChange={handleSelectChange}
             options={selectOptions}
-            placeholder="选择要分享的倒计时"
-            label="选择要分享的倒计时"
+            placeholder={t('share.selectTimer', '选择要分享的倒计时')}
+            label={t('share.selectTimer', '选择要分享的倒计时')}
             icon={FiList}
             data-umami-event="选择分享计时器"
           />
         </div>
         
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">分享链接</label>
+          <label className="block text-sm font-medium mb-2">{t('share.url')}</label>
           <div className="flex">
             <input
               type="text"
@@ -157,17 +157,17 @@ export default function ShareModal({ onClose }) {
             className="flex-1 px-4 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center"
             onClick={onClose}
           >
-            关闭
+            {t('common.close')}
           </button>
           {navigator.share && (
             <button
               className="flex-1 px-4 py-3 rounded-lg text-white flex items-center justify-center"
               style={{ backgroundColor: accentColor }}
               onClick={handleWebShare}
-              data-umami-event="使用系统分享"
+              data-umami-event={t('share.systemShare', '使用系统分享')}
             >
               <FiShare2 className="mr-2" />
-              系统分享
+              {t('share.systemShare', '系统分享')}
             </button>
           )}
         </div>

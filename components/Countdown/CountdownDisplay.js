@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimers } from '../../context/TimerContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import DigitColumn from './DigitColumn';
 import { scheduleCountdownNotification } from '../../utils/notifications';
 
 export default function CountdownDisplay() {
   const { getActiveTimer, checkAndUpdateDefaultTimer } = useTimers();
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [showDays, setShowDays] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
@@ -156,7 +158,7 @@ export default function CountdownDisplay() {
           <>
             <DigitColumn 
               value={formatNumber(timeLeft.days)} 
-              label="天"
+              label={t('time.days')}
               color={activeTimer.color || '#0ea5e9'}
             />
             <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
@@ -166,7 +168,7 @@ export default function CountdownDisplay() {
         {/* 小时 */}
         <DigitColumn 
           value={formatNumber(timeLeft.hours)} 
-          label="时"
+          label={t('time.hours')}
           color={activeTimer.color || '#0ea5e9'}
         />
         <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
@@ -174,7 +176,7 @@ export default function CountdownDisplay() {
         {/* 分钟 */}
         <DigitColumn 
           value={formatNumber(timeLeft.minutes)} 
-          label="分"
+          label={t('time.minutes')}
           color={activeTimer.color || '#0ea5e9'}
         />
         <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
@@ -182,7 +184,7 @@ export default function CountdownDisplay() {
         {/* 秒 */}
         <DigitColumn 
           value={formatNumber(timeLeft.seconds)} 
-          label="秒"
+          label={t('time.seconds')}
           color={activeTimer.color || '#0ea5e9'}
         />
       </motion.div>
@@ -197,7 +199,7 @@ export default function CountdownDisplay() {
             className="mt-8 glass-card px-6 py-4 rounded-xl"
           >
             <p className="text-lg font-medium text-gray-800 dark:text-gray-200">
-              倒计时已结束！
+              {t('timer.finished')}
             </p>
           </motion.div>
         )}

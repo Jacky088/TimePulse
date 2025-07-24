@@ -6,10 +6,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { saveToRemoteCache, getFromRemoteCache } from '../../utils/syncService';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function LoginModal({ onClose }) {
   const { timers, addTimer } = useTimers();
   const { accentColor } = useTheme();
+  const { t } = useTranslation();
   const [syncId, setSyncId] = useState('');
   const [syncUrl, setSyncUrl] = useState('');
   const [password, setPassword] = useState('');
@@ -99,10 +101,10 @@ export default function LoginModal({ onClose }) {
       
       // 更新状态为已保存
       setStatus('saved');
-      setSuccessMessage('同步ID已生成并保存到云端');
-      console.log(`同步ID已生成并保存: ${newSyncId} - ${new Date().toLocaleString()}`);
+      setSuccessMessage(t('login.generated'));
+      console.log(`${t('login.syncIdSaved')}: ${newSyncId} - ${new Date().toLocaleString()}`);
     } catch (error) {
-      setErrorMessage(`生成同步ID失败: ${error.message}`);
+      setErrorMessage(`${t('login.generateError')}: ${error.message}`);
       console.error('同步数据保存失败:', error);
       // 仍然显示生成的ID和密码，但状态为generated而非saved
       setStatus('generated');
@@ -128,7 +130,7 @@ export default function LoginModal({ onClose }) {
       setSuccessMessage('同步数据已保存到云端');
       
       // 记录日志
-      console.log(`同步ID已保存: ${syncId} - ${new Date().toLocaleString()}`);
+      console.log(`${t('login.syncIdSaved')}: ${syncId} - ${new Date().toLocaleString()}`);
     } catch (error) {
       setErrorMessage(`保存失败: ${error.message}`);
       console.error('同步数据保存失败:', error);
@@ -238,7 +240,7 @@ export default function LoginModal({ onClose }) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">数据同步</h2>
+          <h2 className="text-2xl font-semibold">{t('login.title')}</h2>
           <button
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
             onClick={onClose}
@@ -270,7 +272,7 @@ export default function LoginModal({ onClose }) {
         
         <div className="mb-6">
           <p className="text-gray-600 dark:text-gray-300 mb-4">
-            使用数据同步功能可以在不同设备间共享您的计时器。生成一个唯一ID并设置密码，然后通过分享链接或扫描二维码在其他设备登录。
+            {t('login.description')}
           </p>
           
           {/* 切换创建/登录选项卡 */}
@@ -280,13 +282,13 @@ export default function LoginModal({ onClose }) {
                 className={`flex-1 py-2 border-b-2 ${!showLogin ? 'border-primary-500 text-primary-500' : 'border-gray-300 text-gray-500'}`}
                 onClick={() => setShowLogin(false)}
               >
-                创建同步ID
+                {t('login.generateId')}
               </button>
               <button
                 className={`flex-1 py-2 border-b-2 ${showLogin ? 'border-primary-500 text-primary-500' : 'border-gray-300 text-gray-500'}`}
                 onClick={() => setShowLogin(true)}
               >
-                登录同步ID
+                {t('login.useExistingId')}
               </button>
             </div>
           )}
@@ -298,10 +300,10 @@ export default function LoginModal({ onClose }) {
                 className="px-4 py-2 rounded-lg text-white cursor-pointer"
                 style={{ backgroundColor: accentColor }}
                 onClick={generateSyncId}
-                data-umami-event="生成同步ID"
+                data-umami-event={t('login.generateId')}
                 disabled={isLoading}
               >
-                {isLoading ? '生成并保存中...' : '生成同步ID'}
+                {isLoading ? t('login.generating') : t('login.generateId')}
               </button>
             </div>
           )}
@@ -310,24 +312,24 @@ export default function LoginModal({ onClose }) {
           {status === 'idle' && showLogin && (
             <form onSubmit={loadFromRemote} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">同步ID</label>
+                <label className="block text-sm font-medium mb-1">{t('login.syncId')}</label>
                 <input
                   type="text"
                   value={inputSyncId}
                   onChange={(e) => setInputSyncId(e.target.value)}
-                  placeholder="输入您的同步ID"
+                  placeholder={t('login.syncIdPlaceholder', '输入您的同步ID')}
                   className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">密码</label>
+                <label className="block text-sm font-medium mb-1">{t('login.password')}</label>
                 <input
                   type="password"
                   value={inputPassword}
                   onChange={(e) => setInputPassword(e.target.value)}
-                  placeholder="输入密码"
+                  placeholder={t('login.password')}
                   className="w-full px-4 py-2 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                   required
                 />
@@ -338,10 +340,10 @@ export default function LoginModal({ onClose }) {
                 className="w-full px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center"
                 style={{ backgroundColor: accentColor }}
                 disabled={isLoading}
-                data-umami-event="登录同步ID"
+                data-umami-event={t('login.loginAndSync')}
               >
                 <FiDownload className="mr-2" />
-                {isLoading ? '加载中...' : '登录并同步数据'}
+                {isLoading ? t('common.loading') : t('login.loginAndSync')}
               </button>
             </form>
           )}
@@ -350,7 +352,7 @@ export default function LoginModal({ onClose }) {
           {(status === 'generated' || status === 'saved') && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">您的同步ID</label>
+                <label className="block text-sm font-medium mb-1">{t('login.yourSyncId', '您的同步ID')}</label>
                 <div className="flex">
                   <input
                     type="text"
@@ -372,7 +374,7 @@ export default function LoginModal({ onClose }) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">密码</label>
+                <label className="block text-sm font-medium mb-1">{t('login.passwordLabel', '密码')}</label>
                 <div className="flex">
                   <input
                     type="text"
@@ -384,7 +386,7 @@ export default function LoginModal({ onClose }) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">同步链接</label>
+                <label className="block text-sm font-medium mb-1">{t('login.syncLink', '同步链接')}</label>
                 <div className="flex">
                   <input
                     type="text"
@@ -415,7 +417,7 @@ export default function LoginModal({ onClose }) {
                     disabled={isLoading || isOffline}
                   >
                     <FiUpload className="mr-2" />
-                    {isLoading ? '上传中...' : '上传当前数据'}
+                    {isLoading ? t('login.uploading', '上传中...') : t('login.uploadData', '上传当前数据')}
                   </button>
                   
                   <button
@@ -426,7 +428,7 @@ export default function LoginModal({ onClose }) {
                     disabled={isLoading || isOffline}
                   >
                     <FiDownload className="mr-2" />
-                    {isLoading ? '下载中...' : '下载最新数据'}
+                    {isLoading ? t('login.downloading', '下载中...') : t('login.downloadData', '下载最新数据')}
                   </button>
                 </div>
               )}
@@ -444,7 +446,7 @@ export default function LoginModal({ onClose }) {
               
               {status === 'saved' && (
                 <div className="text-center text-green-500 font-medium">
-                  ✓ 同步ID已保存
+                  ✓ {t('login.syncIdSaved', '同步ID已保存')}
                 </div>
               )}
             </div>
@@ -457,7 +459,7 @@ export default function LoginModal({ onClose }) {
             onClick={onClose}
             disabled={isLoading}
           >
-            关闭
+            {t('common.close', '关闭')}
           </button>
           {(status === 'generated' || status === 'saved') && navigator.share && (
             <button
@@ -474,7 +476,7 @@ export default function LoginModal({ onClose }) {
               disabled={isLoading}
             >
               <FiShare2 className="mr-2" />
-              分享
+              {t('login.shareButton', '分享')}
             </button>
           )}
         </div>

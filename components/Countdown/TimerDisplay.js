@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimers } from '../../context/TimerContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import DigitColumn from './DigitColumn';
 import { scheduleCountdownNotification } from '../../utils/notifications';
 import { FiPlay, FiPause, FiSquare } from 'react-icons/fi';
 
 export default function TimerDisplay() {
   const { getActiveTimer, updateTimer, checkAndUpdateDefaultTimer } = useTimers();
+  const { t } = useTranslation();
   const [timeValue, setTimeValue] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [showDays, setShowDays] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
@@ -337,7 +339,7 @@ export default function TimerDisplay() {
   if (!activeTimer) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl text-gray-400">没有活动的计时器</p>
+        <p className="text-xl text-gray-400">{t('timer.noActiveTimer')}</p>
       </div>
     );
   }
@@ -357,11 +359,11 @@ export default function TimerDisplay() {
   const getTimerDescription = () => {
     switch (activeTimer.type) {
       case 'stopwatch':
-        return isRunning ? '正在计时中...' : '已暂停';
+        return isRunning ? t('timer.running') : t('timer.paused');
       case 'worldclock':
         return `${activeTimer.country} - ${activeTimer.timezone}`;
       default:
-        return `目标时间: ${new Date(activeTimer.targetDate).toLocaleString()}`;
+        return `${t('timer.target')}: ${new Date(activeTimer.targetDate).toLocaleString()}`;
     }
   };
   
@@ -399,7 +401,7 @@ export default function TimerDisplay() {
           <>
             <DigitColumn 
               value={formatNumber(timeValue.days)} 
-              label="天"
+              label={t('time.days')}
               color={activeTimer.color || '#0ea5e9'}
             />
             <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
@@ -409,7 +411,7 @@ export default function TimerDisplay() {
         {/* 小时 */}
         <DigitColumn 
           value={formatNumber(timeValue.hours)} 
-          label={activeTimer.type === 'worldclock' ? '时' : '时'}
+          label={t('time.hours')}
           color={activeTimer.color || '#0ea5e9'}
         />
         <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
@@ -417,7 +419,7 @@ export default function TimerDisplay() {
         {/* 分钟 */}
         <DigitColumn 
           value={formatNumber(timeValue.minutes)} 
-          label="分"
+          label={t('time.minutes')}
           color={activeTimer.color || '#0ea5e9'}
         />
         <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
@@ -425,7 +427,7 @@ export default function TimerDisplay() {
         {/* 秒 */}
         <DigitColumn 
           value={formatNumber(timeValue.seconds)} 
-          label="秒"
+          label={t('time.seconds')}
           color={activeTimer.color || '#0ea5e9'}
         />
       </motion.div>
@@ -481,7 +483,7 @@ export default function TimerDisplay() {
             className="mt-8 glass-card px-6 py-4 rounded-xl"
           >
             <p className="text-lg font-medium text-gray-800 dark:text-gray-200">
-              倒计时已结束！
+              {t('timer.finished')}
             </p>
           </motion.div>
         )}

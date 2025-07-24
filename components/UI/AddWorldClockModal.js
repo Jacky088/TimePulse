@@ -4,6 +4,7 @@ import { FiX, FiCheck, FiGlobe } from 'react-icons/fi';
 import { HexColorPicker } from 'react-colorful';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import WorldClockSelectionModal from './WorldClockSelectionModal';
 
 // 世界时钟专用预设颜色
@@ -33,6 +34,7 @@ const worldClockColors = [
 export default function AddWorldClockModal({ onClose }) {
   const { addTimer } = useTimers();
   const { accentColor } = useTheme();
+  const { t } = useTranslation();
   const [step, setStep] = useState(1); // 1: 选择时区, 2: 选择颜色, 3: 完成
   const [showTimezoneModal, setShowTimezoneModal] = useState(false);
   
@@ -104,7 +106,7 @@ export default function AddWorldClockModal({ onClose }) {
           {step === 1 && (
             <>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">创建世界时间</h2>
+              <h2 className="text-2xl font-semibold">{t('modal.addWorldClock.create', '创建世界时间')}</h2>
               <button
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={onClose}
@@ -118,7 +120,7 @@ export default function AddWorldClockModal({ onClose }) {
                   data-umami-event="选择世界时间时区"
                 >
                   <FiGlobe className="mr-2 text-primary-500" />
-                  <span>选择时区和城市</span>
+                  <span>{t('modal.addWorldClock.selectTimezoneAndCity', '选择时区和城市')}</span>
                 </button>
               </div>
               
@@ -126,7 +128,7 @@ export default function AddWorldClockModal({ onClose }) {
                 <>
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
                     <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
-                      已选择时区
+                      {t('modal.addWorldClock.selectedTimezone', '已选择时区')}
                     </h3>
                     <div className="text-blue-600 dark:text-blue-300">
                       <div className="font-medium">{formData.city}</div>
@@ -157,7 +159,7 @@ export default function AddWorldClockModal({ onClose }) {
                   className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                   onClick={onClose}
                 >
-                  取消
+                  {t('common.cancel', '取消')}
                 </button>
                 {formData.timezone && (
                   <button
@@ -167,7 +169,7 @@ export default function AddWorldClockModal({ onClose }) {
                     disabled={!formData.name}
                     data-umami-event="下一步-选择世界时间颜色"
                   >
-                    下一步
+                    {t('common.next', '下一步')}
                   </button>
                 )}
               </div>
@@ -177,7 +179,7 @@ export default function AddWorldClockModal({ onClose }) {
           {step === 2 && (
             <>
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">选择颜色</h2>
+                <h2 className="text-2xl font-semibold">{t('modal.addWorldClock.selectColor', '选择颜色')}</h2>
                 <button
                   className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={onClose}
@@ -216,7 +218,7 @@ export default function AddWorldClockModal({ onClose }) {
                   className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
                   onClick={() => setStep(1)}
                 >
-                  上一步
+                  {t('common.previous', '上一步')}
                 </button>
                 <button
                   className="px-4 py-2 rounded-lg text-white"
@@ -224,7 +226,7 @@ export default function AddWorldClockModal({ onClose }) {
                   onClick={handleSubmit}
                   data-umami-event="创建世界时间-确认"
                 >
-                  创建
+                  {t('common.create', '创建')}
                 </button>
               </div>
             </>
@@ -241,7 +243,7 @@ export default function AddWorldClockModal({ onClose }) {
               </motion.div>
               <h2 className="text-2xl font-semibold mb-2">世界时间已创建</h2>
               <p className="text-gray-500 dark:text-gray-400">
-                {formData.city}时间已成功创建
+                {formData.city}{t('timer.successfullyCreated', '时间已成功创建')}
               </p>
             </div>
           )}

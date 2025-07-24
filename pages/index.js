@@ -13,12 +13,14 @@ import ShareModal from '../components/UI/ShareModal';
 import LoginModal from '../components/UI/LoginModal';
 import { useTimers } from '../context/TimerContext';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { FaPlus, FaShareAlt, FaExpand, FaCompress } from 'react-icons/fa';
 import { parseShareUrl } from '../utils/shareUtils';
 
 export default function Home() {
   const { timers, activeTimerId, setActiveTimerId, addTimer } = useTimers();
   const { theme, accentColor } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -125,7 +127,7 @@ export default function Home() {
               window.location.hash = 'add';
             }
           }}
-          data-umami-event="创建计时器"
+          data-umami-event={t('timer.create')}
         >
           <FaPlus className="text-xl" />
         </motion.button>
@@ -144,7 +146,7 @@ export default function Home() {
               window.location.hash = 'share';
             }
           }}
-          data-umami-event="分享倒计时"
+          data-umami-event={t('timer.share')}
         >
           <FaShareAlt className="text-xl" />
         </motion.button>

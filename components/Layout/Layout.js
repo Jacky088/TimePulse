@@ -3,8 +3,10 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import Header from './Header';
 import Footer from './Footer';
 import { ThemeColorSynchronizer } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function Layout({ children }) {
+  const { t } = useTranslation();
   const { scrollYProgress } = useScroll();
   const footerRef = useRef(null);
   const [showFooter, setShowFooter] = useState(false);
@@ -102,7 +104,7 @@ export default function Layout({ children }) {
               duration: 2
             }}
           >
-            <p>向下滑动查看更多信息</p>
+            <p>{t('footer.scrollDown', '向下滑动查看更多信息')}</p>
             <svg className="w-6 h-6 mx-auto mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>

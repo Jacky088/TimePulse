@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiChevronDown, FiCheck } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * 自定义下拉菜单组件
@@ -20,7 +21,7 @@ export default function CustomSelect({
   value, 
   onChange, 
   options, 
-  placeholder = '请选择', 
+  placeholder,
   label,
   icon: Icon,
   className = '',
@@ -28,9 +29,13 @@ export default function CustomSelect({
   required = false
 }) {
   const { accentColor } = useTheme();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState('');
   const selectRef = useRef(null);
+  
+  // 设置默认占位符
+  const defaultPlaceholder = placeholder || t('common.select', '请选择');
   
   // 设置初始选中项的标签
   useEffect(() => {
@@ -159,7 +164,7 @@ export default function CustomSelect({
         <div className="flex items-center space-x-2 truncate">
           {Icon && <Icon className="text-gray-500 dark:text-gray-400" />}
           <span className={selectedLabel ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}>
-            {selectedLabel || placeholder}
+            {selectedLabel || defaultPlaceholder}
           </span>
         </div>
         <FiChevronDown 
@@ -227,7 +232,7 @@ export default function CustomSelect({
         required={required}
         disabled={disabled}
       >
-        <option value="" disabled>{placeholder}</option>
+        <option value="" disabled>{defaultPlaceholder}</option>
         {options.map(option => (
           <option key={option.value} value={option.value}>
             {option.label}

@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe } from 'react-icons/fi';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import LoginModal from '../UI/LoginModal';
 import { HexColorPicker } from 'react-colorful';
 
 export default function Header() {
   const { timers, activeTimerId, setActiveTimerId, deleteTimer, updateTimer } = useTimers();
   const { theme, toggleTheme, accentColor } = useTheme();
+  const { t, changeLanguage, currentLang } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -39,9 +41,7 @@ export default function Header() {
 
   // 处理语言切换
   const switchLanguage = (lang) => {
-    const url = new URL(window.location);
-    url.searchParams.set('lang', lang);
-    window.location.href = url.toString();
+    changeLanguage(lang);
     setIsLanguageOpen(false);
   };
 
@@ -161,7 +161,7 @@ export default function Header() {
           <button
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
             onClick={toggleFullscreen}
-            data-umami-event={isFullscreen ? "退出全屏" : "进入全屏"}
+            data-umami-event={isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}
           >
             {isFullscreen ? <FiMinimize className="text-xl" /> : <FiMaximize className="text-xl" />}
           </button>
@@ -170,7 +170,7 @@ export default function Header() {
           <button
             className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
             onClick={openLoginModal}
-            data-umami-event="打开登录"
+            data-umami-event={t('header.login')}
           >
             <FiUser className="text-xl" />
           </button>
@@ -179,7 +179,7 @@ export default function Header() {
           <button
             className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
             onClick={toggleTheme}
-            data-umami-event="切换主题"
+            data-umami-event={t('header.themeToggle')}
           >
             {theme === 'dark' ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
           </button>
@@ -188,7 +188,7 @@ export default function Header() {
           <button
             className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
             onClick={() => setIsLanguageOpen(true)}
-            data-umami-event="打开语言选择"
+            data-umami-event={t('header.languageSelect')}
           >
             <FiGlobe className="text-xl" />
           </button>
@@ -202,7 +202,7 @@ export default function Header() {
                 window.location.hash = 'manage';
               }
             }}
-            data-umami-event="打开管理菜单"
+            data-umami-event={t('header.manage')}
           >
             <FiSettings className="text-xl" />
           </button>
@@ -211,7 +211,7 @@ export default function Header() {
           <button
             className="p-2 ml-2 md:hidden rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            data-umami-event="打开移动菜单"
+            data-umami-event={t('header.menu')}
           >
             {isMenuOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
           </button>
@@ -283,7 +283,7 @@ export default function Header() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">管理计时器</h2>
+                <h2 className="text-xl font-semibold">{t('header.manage')}</h2>
                 <button
                   className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                   onClick={() => {
@@ -301,11 +301,11 @@ export default function Header() {
               {editingTimer ? (
                 <div className="space-y-4">
                   <h3 className="font-medium mb-2">
-                    {editingTimer.isLimitedEdit ? '编辑计时器' : '编辑倒计时'}
+                    {editingTimer.isLimitedEdit ? t('modal.edit.editTimer') : t('modal.edit.editCountdown')}
                   </h3>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">名称</label>
+                    <label className="block text-sm font-medium mb-1">{t('modal.edit.name')}</label>
                     <input
                       type="text"
                       value={editingTimer.name}
@@ -318,7 +318,7 @@ export default function Header() {
                   {!editingTimer.isLimitedEdit && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium mb-1">日期</label>
+                        <label className="block text-sm font-medium mb-1">{t('modal.edit.date')}</label>
                         <input
                           type="date"
                           value={editingTimer.targetDate}
@@ -328,7 +328,7 @@ export default function Header() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium mb-1">时间</label>
+                        <label className="block text-sm font-medium mb-1">{t('modal.edit.time')}</label>
                         <input
                           type="time"
                           value={editingTimer.targetTime}
@@ -340,7 +340,7 @@ export default function Header() {
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">颜色</label>
+                    <label className="block text-sm font-medium mb-1">{t('modal.edit.color')}</label>
                     <div 
                       className="h-10 w-full rounded-lg cursor-pointer"
                       style={{ backgroundColor: editingTimer.color }}
@@ -362,15 +362,15 @@ export default function Header() {
                       className="flex-1 px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer"
                       onClick={() => setEditingTimer(null)}
                     >
-                      取消
+                      {t('common.cancel')}
                     </button>
                     <button
                       className="flex-1 px-3 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white cursor-pointer flex items-center justify-center"
                       onClick={saveEditedTimer}
-                      data-umami-event="保存修改计时器"
+                      data-umami-event={t('modal.edit.saveChanges')}
                     >
                       <FiSave className="mr-2" />
-                      保存修改
+                      {t('modal.edit.saveChanges')}
                     </button>
                   </div>
                 </div>
@@ -388,9 +388,9 @@ export default function Header() {
                         <h3 className="font-medium">{timer.name}</h3>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {timer.type === 'stopwatch' 
-                            ? '正计时器' 
+                            ? t('timer.stopwatch')
                             : timer.type === 'worldclock' 
-                            ? `${timer.country || '世界时间'} - ${timer.timezone || ''}`
+                            ? `${timer.country || t('timer.worldClock')} - ${timer.timezone || ''}`
                             : new Date(timer.targetDate).toLocaleString()
                           }
                         </p>
@@ -400,14 +400,14 @@ export default function Header() {
                         <button
                           className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 cursor-pointer"
                           onClick={() => startEditTimer(timer)}
-                          data-umami-event="编辑计时器"
+                          data-umami-event={t('timer.editTimer')}
                         >
                           <FiEdit />
                         </button>
                         <button
                           className="p-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 cursor-pointer"
                           onClick={() => deleteTimer(timer.id)}
-                          data-umami-event="删除计时器"
+                          data-umami-event={t('timer.deleteTimer')}
                         >
                           <FiX />
                         </button>
@@ -439,7 +439,7 @@ export default function Header() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">选择语言 / Select Language</h2>
+                <h2 className="text-xl font-semibold">{t('header.selectLanguage')}</h2>
                 <button
                   className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                   onClick={() => setIsLanguageOpen(false)}
@@ -452,13 +452,13 @@ export default function Header() {
                 <button
                   className="w-full px-4 py-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-black/20 text-left transition-all cursor-pointer"
                   onClick={() => switchLanguage('zh-CN')}
-                  data-umami-event="切换到中文"
+                  data-umami-event={t('header.chinese')}
                 >
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">🇨🇳</span>
                     <div>
-                      <div className="font-medium">中文</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">简体中文</div>
+                      <div className="font-medium">{t('header.chinese')}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{t('header.chineseSimplified')}</div>
                     </div>
                   </div>
                 </button>
@@ -466,13 +466,13 @@ export default function Header() {
                 <button
                   className="w-full px-4 py-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-black/20 text-left transition-all cursor-pointer"
                   onClick={() => switchLanguage('en-US')}
-                  data-umami-event="切换到英文"
+                  data-umami-event={t('header.english')}
                 >
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">🇺🇸</span>
                     <div>
-                      <div className="font-medium">English</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">English (US)</div>
+                      <div className="font-medium">{t('header.english')}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{t('header.englishUS')}</div>
                     </div>
                   </div>
                 </button>
