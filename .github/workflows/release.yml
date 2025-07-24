@@ -86,9 +86,12 @@ jobs:
             echo "- 🎉 首次发布版本" >> release.md
             echo "- 📦 包含所有核心功能" >> release.md
           fi
-          echo "release_body<<EOF" >> $GITHUB_OUTPUT
-          cat release.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # 使用更安全的方式处理多行输出
+          {
+            echo 'release_body<<RELEASE_NOTES_EOF'
+            cat release.md
+            echo 'RELEASE_NOTES_EOF'
+          } >> $GITHUB_OUTPUT
 
       - name: Create ZIP Archive
         run: |
