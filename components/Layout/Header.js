@@ -439,13 +439,13 @@ export default function Header() {
                   
                   <div className="flex space-x-2 pt-2">
                     <button
-                      className="flex-1 px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer"
+                      className="flex-1 btn-glass-secondary"
                       onClick={() => setEditingTimer(null)}
                     >
                       {t('common.cancel')}
                     </button>
                     <button
-                      className="flex-1 px-3 py-2 rounded-lg bg-primary-500 hover:bg-primary-600 text-white cursor-pointer flex items-center justify-center"
+                      className="flex-1 btn-glass-primary flex items-center justify-center"
                       onClick={saveEditedTimer}
                       data-umami-event={t('modal.edit.saveChanges')}
                     >

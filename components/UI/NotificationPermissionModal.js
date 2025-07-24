@@ -119,11 +119,11 @@ export default function NotificationPermissionModal({ isOpen, onClose, onAllow, 
               <button
                 onClick={handleAllow}
                 disabled={isRequesting}
-                className="flex-1 px-4 py-2 rounded-lg font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 cursor-pointer bg-primary-400 hover:bg-primary-500 text-white backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 btn-glass-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isRequesting ? (
                   <div className="flex items-center justify-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                     <span>{t('notification.requesting')}</span>
                   </div>
                 ) : (
@@ -133,7 +133,7 @@ export default function NotificationPermissionModal({ isOpen, onClose, onAllow, 
               <button
                 onClick={handleDeny}
                 disabled={isRequesting}
-                className="flex-1 px-4 py-2 rounded-lg font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 cursor-pointer bg-black/20 dark:bg-black/40 hover:bg-black/30 dark:hover:bg-black/50 text-gray-700 dark:text-gray-300 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 btn-glass-secondary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('notification.deny')}
               </button>

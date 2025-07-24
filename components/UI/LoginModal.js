@@ -297,8 +297,7 @@ export default function LoginModal({ onClose }) {
           {status === 'idle' && !showLogin && (
             <div className="flex justify-center">
               <button
-                className="px-4 py-2 rounded-lg text-white cursor-pointer"
-                style={{ backgroundColor: accentColor }}
+                className="btn-glass-primary"
                 onClick={generateSyncId}
                 data-umami-event={t('login.generateId')}
                 disabled={isLoading}
@@ -337,8 +336,7 @@ export default function LoginModal({ onClose }) {
               
               <button
                 type="submit"
-                className="w-full px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center"
-                style={{ backgroundColor: accentColor }}
+                className="w-full btn-glass-primary flex items-center justify-center"
                 disabled={isLoading}
                 data-umami-event={t('login.loginAndSync')}
               >
@@ -362,7 +360,7 @@ export default function LoginModal({ onClose }) {
                   />
                   {status === 'generated' && (
                     <button
-                      className="ml-2 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white cursor-pointer"
+                      className="ml-2 btn-glass-primary"
                       onClick={saveSyncId}
                       data-umami-event="保存同步ID"
                       disabled={isLoading}
@@ -395,10 +393,7 @@ export default function LoginModal({ onClose }) {
                     className="flex-1 px-4 py-2 rounded-l-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                   />
                   <button
-                    className={`px-4 py-2 rounded-r-lg text-white cursor-pointer`}
-                    style={{ 
-                      backgroundColor: copied ? '#10b981' : accentColor 
-                    }}
+                    className={`btn-glass-primary rounded-r-lg rounded-l-none ${copied ? 'bg-green-500/30 border-green-500/40' : ''}`}
                     onClick={copyUrl}
                     data-umami-event="复制同步链接"
                   >
@@ -410,8 +405,7 @@ export default function LoginModal({ onClose }) {
               {status === 'saved' && (
                 <div className="flex space-x-2">
                   <button
-                    className={`flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center ${isOffline ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    style={{ backgroundColor: '#3b82f6' }}
+                    className={`flex-1 btn-glass-primary flex items-center justify-center ${isOffline ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={isOffline ? null : uploadToRemote}
                     data-umami-event="上传数据"
                     disabled={isLoading || isOffline}
@@ -421,8 +415,7 @@ export default function LoginModal({ onClose }) {
                   </button>
                   
                   <button
-                    className={`flex-1 px-4 py-2 rounded-lg text-white cursor-pointer flex items-center justify-center ${isOffline ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    style={{ backgroundColor: '#10b981' }}
+                    className={`flex-1 btn-glass-primary flex items-center justify-center ${isOffline ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={isOffline ? null : loadFromRemote}
                     data-umami-event="下载数据"
                     disabled={isLoading || isOffline}
@@ -455,7 +448,7 @@ export default function LoginModal({ onClose }) {
         
         <div className="flex space-x-4">
           <button
-            className="flex-1 px-4 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center cursor-pointer z-[650]"
+            className="flex-1 btn-glass-secondary flex items-center justify-center z-[650]"
             onClick={onClose}
             disabled={isLoading}
           >
@@ -463,8 +456,7 @@ export default function LoginModal({ onClose }) {
           </button>
           {(status === 'generated' || status === 'saved') && navigator.share && (
             <button
-              className="flex-1 px-4 py-3 rounded-lg text-white flex items-center justify-center cursor-pointer z-[650]"
-              style={{ backgroundColor: accentColor }}
+              className="flex-1 btn-glass-primary flex items-center justify-center z-[650]"
               onClick={() => {
                 navigator.share({
                   title: '登录到我的TimePulse',

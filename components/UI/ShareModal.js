@@ -154,15 +154,14 @@ export default function ShareModal({ onClose }) {
         
         <div className="flex space-x-4">
           <button
-            className="flex-1 px-4 py-3 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center"
+            className="flex-1 btn-glass-secondary flex items-center justify-center"
             onClick={onClose}
           >
             {t('common.close')}
           </button>
           {navigator.share && (
             <button
-              className="flex-1 px-4 py-3 rounded-lg text-white flex items-center justify-center"
-              style={{ backgroundColor: accentColor }}
+              className="flex-1 btn-glass-primary flex items-center justify-center"
               onClick={handleWebShare}
               data-umami-event={t('share.systemShare', '使用系统分享')}
             >

@@ -229,14 +229,13 @@ export default function AddTimerModal({ onClose }) {
             
             <div className="mt-6 flex justify-between">
               <button
-                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                className="btn-glass-secondary"
                 onClick={onClose}
               >
                 {t('common.cancel', '取消')}
               </button>
               <button
-                className="px-4 py-2 rounded-lg text-white"
-                style={{ backgroundColor: accentColor }}
+                className="btn-glass-primary"
                 onClick={() => setStep(2)}
                 disabled={!formData.name || !formData.targetDate || !formData.targetTime}
                 data-umami-event="下一步-选择颜色"
@@ -286,14 +285,13 @@ export default function AddTimerModal({ onClose }) {
             
             <div className="mt-6 flex justify-between">
               <button
-                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                className="btn-glass-secondary"
                 onClick={() => setStep(1)}
               >
                 {t('common.previous', '上一步')}
               </button>
               <button
-                className="px-4 py-2 rounded-lg text-white"
-                style={{ backgroundColor: accentColor }}
+                className="btn-glass-primary"
                 onClick={handleSubmit}
                 data-umami-event="创建计时器-确认"
               >

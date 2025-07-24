@@ -79,10 +79,10 @@ export default function UpdateToast() {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className={`flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors ${
+                className={`flex-1 btn-glass-primary inline-flex items-center justify-center text-sm ${
                   isRefreshing 
-                    ? 'bg-primary-400 cursor-not-allowed' 
-                    : 'bg-primary-500 hover:bg-primary-600'
+                    ? 'cursor-not-allowed opacity-60' 
+                    : ''
                 }`}
               >
                 <FiRefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -93,7 +93,7 @@ export default function UpdateToast() {
               </button>
               <button
                 onClick={handleDismiss}
-                className="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white/10 dark:bg-black/10 hover:bg-white/20 dark:hover:bg-black/20 transition-colors border border-white/20 dark:border-white/10"
+                className="flex-1 btn-glass-secondary inline-flex items-center justify-center text-sm"
               >
                 {t('updateToast.later', '稍后')}
               </button>
