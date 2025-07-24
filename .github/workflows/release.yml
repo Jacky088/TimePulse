@@ -86,12 +86,7 @@ jobs:
             echo "- 🎉 首次发布版本" >> release.md
             echo "- 📦 包含所有核心功能" >> release.md
           fi
-          # 使用更安全的方式处理多行输出
-          {
-            echo 'release_body<<RELEASE_NOTES_EOF'
-            cat release.md
-            echo 'RELEASE_NOTES_EOF'
-          } >> $GITHUB_OUTPUT
+          echo "Release notes generated successfully"
 
       - name: Create ZIP Archive
         run: |
@@ -104,7 +99,7 @@ jobs:
         with:
           tag_name: ${{ steps.get_version.outputs.version }}
           name: Release ${{ steps.get_version.outputs.version }}
-          body: ${{ steps.release_notes.outputs.release_body }}
+          body_path: release.md
           files: site-${{ steps.get_version.outputs.version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
