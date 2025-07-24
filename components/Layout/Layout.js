@@ -13,23 +13,23 @@ export default function Layout({ children }) {
   const [showFooter, setShowFooter] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   
-  // 页面滚动时，Footer的透明度和z-index
+  // 页面滚动时，Footer的透明度和z-index - 更早开始显示
   const footerOpacity = useTransform(
     scrollYProgress, 
-    [0, 0.8, 0.9, 1], 
-    [0, 0, 0.8, 1]
+    [0, 0.4, 0.6, 0.8], 
+    [0, 0, 0.5, 1]
   );
   
   const footerBlur = useTransform(
     scrollYProgress, 
-    [0.8, 1], 
+    [0.4, 0.8], 
     [0, 16]
   );
   
-  // Footer的z-index随滚动逐渐增加，但保持在Header之下
+  // Footer的z-index随滚动逐渐增加，但保持在Header之下 - 更早开始增加
   const footerZIndex = useTransform(
     scrollYProgress,
-    [0, 0.3, 0.8, 1],
+    [0, 0.2, 0.5, 0.8],
     [1, 5, 15, 35]
   );
   
@@ -45,8 +45,8 @@ export default function Layout({ children }) {
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       
-      // 只有当滚动接近底部时才显示footer
-      const isNearBottom = scrollPosition + windowHeight >= documentHeight - 100;
+      // 调整触发距离，让footer更早开始显示
+      const isNearBottom = scrollPosition + windowHeight >= documentHeight - 300;
       
       if (isNearBottom && !showFooter) {
         setShowFooter(true);

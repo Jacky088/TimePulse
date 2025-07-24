@@ -41,8 +41,8 @@ export default function Home() {
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       
-      // 与Layout中相同的逻辑：当滚动接近底部时隐藏按钮
-      const isNearBottom = scrollPosition + windowHeight >= documentHeight - 100;
+      // 与Layout中相同的逻辑：当滚动接近底部时隐藏按钮（调整为更早触发）
+      const isNearBottom = scrollPosition + windowHeight >= documentHeight - 300;
       setIsFooterVisible(isNearBottom);
     };
     
