@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { addDays, getYear, setYear } from 'date-fns';
 import { getFromRemoteCache, saveToRemoteCache } from '../utils/syncService';
 import { scheduleCountdownNotification, cancelCountdownNotification } from '../utils/notifications';
+import { addNotification, removeNotification } from '../utils/notificationManager';
 import solarlunar from 'solarlunar';
 
 const TimerContext = createContext();
@@ -343,7 +344,7 @@ export function TimerProvider({ children }) {
     
     // 只为倒计时类型设置通知（异步处理，不阻塞UI）
     if (newTimer.type === 'countdown' || !newTimer.type) {
-      scheduleCountdownNotification({
+      addNotification({
         id: newTimer.id,
         title: newTimer.name,
         targetTime: new Date(newTimer.targetDate).getTime()
@@ -358,7 +359,7 @@ export function TimerProvider({ children }) {
   // 删除计时器
   const deleteTimer = (id) => {
     // 取消该计时器的通知
-    cancelCountdownNotification(id);
+    removeNotification(id);
     
     setTimers(prev => {
       const newTimers = prev.filter(timer => timer.id !== id);
@@ -392,7 +393,7 @@ export function TimerProvider({ children }) {
       
       // 只为倒计时更新通知（异步处理，不阻塞UI）
       if (updatedTimer && (updatedTimer.type === 'countdown' || !updatedTimer.type)) {
-        scheduleCountdownNotification({
+        addNotification({
           id: updatedTimer.id,
           title: updatedTimer.name,
           targetTime: new Date(updatedTimer.targetDate).getTime()

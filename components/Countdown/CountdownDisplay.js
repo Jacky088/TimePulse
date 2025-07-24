@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTimers } from '../../context/TimerContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import DigitColumn from './DigitColumn';
-import { scheduleCountdownNotification } from '../../utils/notifications';
+import { addNotification } from '../../utils/notificationManager';
 
 export default function CountdownDisplay() {
   const { getActiveTimer, checkAndUpdateDefaultTimer } = useTimers();
@@ -60,10 +60,12 @@ export default function CountdownDisplay() {
           // 当倒计时结束时发送通知
           try {
             console.log('倒计时结束，尝试发送通知:', timer.name);
-            scheduleCountdownNotification({
+            addNotification({
               id: timer.id,
               title: timer.name,
               targetTime: Date.now() // 设置为当前时间以立即触发
+            }).catch(error => {
+              console.error('发送倒计时结束通知失败:', error);
             });
           } catch (error) {
             console.error('发送倒计时结束通知失败:', error);

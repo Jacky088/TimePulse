@@ -4,6 +4,103 @@ const pendingNotifications = [];
 // 存储用户的通知权限偏好
 const NOTIFICATION_PREFERENCE_KEY = 'timepulse_notification_preference';
 
+// 通知翻译缓存
+let notificationTranslations = null;
+
+/**
+ * 获取当前语言
+ * @returns {string} 语言代码
+ */
+function getCurrentLanguage() {
+  if (typeof window === 'undefined') return 'zh-CN';
+  
+  // 从 URL 参数获取语言
+  const urlParams = new URLSearchParams(window.location.search);
+  const langParam = urlParams.get('lang');
+  
+  if (langParam) {
+    if (langParam === 'en-US') return 'en-US';
+    if (langParam === 'zh-CN') return 'zh-CN';
+  }
+  
+  // 默认返回中文
+  return 'zh-CN';
+}
+
+/**
+ * 加载通知翻译文件
+ * @returns {Promise<object>} 翻译对象
+ */
+async function loadNotificationTranslations() {
+  if (notificationTranslations) {
+    return notificationTranslations;
+  }
+  
+  try {
+    const lang = getCurrentLanguage();
+    const locale = lang === 'en-US' ? 'en' : 'zh';
+    const response = await fetch(`/locales/${locale}/common.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to load ${locale} translations`);
+    }
+    const translations = await response.json();
+    notificationTranslations = translations;
+    return translations;
+  } catch (error) {
+    console.error('Failed to load notification translations:', error);
+    // 返回默认的中文翻译
+    return {
+      notification: {
+        messages: {
+          countdownEnded: "倒计时结束",
+          countdownEndedBody: "您设置的倒计时\"{title}\"已经结束。",
+          testNotification: "通知测试",
+          testNotificationBody: "这是一个测试通知，用于验证通知功能是否正常工作。"
+        }
+      }
+    };
+  }
+}
+
+/**
+ * 获取本地化的通知消息
+ * @param {string} key - 翻译键
+ * @param {object} replacements - 替换变量
+ * @returns {Promise<string>} 本地化消息
+ */
+async function getLocalizedNotificationMessage(key, replacements = {}) {
+  const translations = await loadNotificationTranslations();
+  
+  const getNestedValue = (obj, path) => {
+    return path.split('.').reduce((current, pathKey) => {
+      return current && current[pathKey] !== undefined ? current[pathKey] : null;
+    }, obj);
+  };
+  
+  let message = getNestedValue(translations, key);
+  
+  if (!message) {
+    console.warn(`Translation not found for key: ${key}`);
+    return key;
+  }
+  
+  // 替换变量
+  Object.keys(replacements).forEach(placeholder => {
+    const regex = new RegExp(`\\{${placeholder}\\}`, 'g');
+    message = message.replace(regex, replacements[placeholder]);
+  });
+  
+  return message;
+}
+
+/**
+ * 清除通知翻译缓存（在语言切换时调用）
+ */
+export function clearNotificationTranslationsCache() {
+  notificationTranslations = null;
+  console.log('通知翻译缓存已清除');
+}
+
 /**
  * 获取用户的通知权限偏好
  * @returns {string} 'allowed' | 'denied' | 'not_set'
@@ -133,11 +230,20 @@ export async function scheduleCountdownNotification(countdown, skipPermissionChe
     return { success: false, needsPermission: false };
   }
 
+  // 获取本地化的通知消息
+  const notificationTitle = await getLocalizedNotificationMessage(
+    'notification.messages.countdownEnded'
+  );
+  const notificationBody = await getLocalizedNotificationMessage(
+    'notification.messages.countdownEndedBody',
+    { title: countdown.title }
+  );
+
   // 创建通知数据
   const notificationData = {
     action: 'scheduleNotification',
-    title: `${countdown.title} 倒计时结束`,
-    body: `您设置的 "${countdown.title}" 倒计时已经结束。`,
+    title: notificationTitle,
+    body: notificationBody,
     timestamp: countdown.targetTime,
     id: countdown.id
   };
@@ -239,16 +345,38 @@ export async function testNotification() {
   
   // 发送测试通知
   try {
+    // 获取本地化的测试通知消息
+    const testTitle = await getLocalizedNotificationMessage(
+      'notification.messages.testNotification'
+    );
+    const testBody = await getLocalizedNotificationMessage(
+      'notification.messages.testNotificationBody'
+    );
+    
     const testCountdown = {
       id: 'test-' + Date.now(),
-      title: '通知测试',
+      title: testTitle,
       targetTime: Date.now() + 1000 // 1秒后触发
     };
     
-    const result = await scheduleCountdownNotification(testCountdown, true);
-    console.log('测试通知调度结果:', result);
+    // 创建通知数据（跳过标题处理，直接使用测试消息）
+    const notificationData = {
+      action: 'scheduleNotification',
+      title: testTitle,
+      body: testBody,
+      timestamp: testCountdown.targetTime,
+      id: testCountdown.id
+    };
     
-    return result.success;
+    // 直接发送到 Service Worker
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage(notificationData);
+      console.log('测试通知已发送');
+      return true;
+    } else {
+      console.error('Service Worker未激活');
+      return false;
+    }
   } catch (error) {
     console.error('测试通知失败:', error);
     return false;

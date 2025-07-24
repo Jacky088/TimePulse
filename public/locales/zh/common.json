@@ -341,6 +341,12 @@
     "successMessage": "您将在倒计时结束时收到通知提醒",
     "failed": "通知权限获取失败",
     "failedMessage": "请检查浏览器设置，或稍后重试",
-    "failedRetry": "3秒后将返回权限请求页面"
+    "failedRetry": "3秒后将返回权限请求页面",
+    "messages": {
+      "countdownEnded": "倒计时结束",
+      "countdownEndedBody": "您设置的倒计时\"{title}\"已经结束。",
+      "testNotification": "通知测试",
+      "testNotificationBody": "这是一个测试通知，用于验证通知功能是否正常工作。"
+    }
   }
 }

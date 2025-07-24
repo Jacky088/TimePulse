@@ -341,6 +341,12 @@
     "successMessage": "You'll receive notifications when countdowns end",
     "failed": "Failed to get notification permission",
     "failedMessage": "Please check browser settings or try again later",
-    "failedRetry": "Returning to permission request in 3 seconds"
+    "failedRetry": "Returning to permission request in 3 seconds",
+    "messages": {
+      "countdownEnded": "Countdown Ended",
+      "countdownEndedBody": "Your countdown \"{title}\" has ended.",
+      "testNotification": "Notification Test",
+      "testNotificationBody": "This is a test notification to verify the notification function is working properly."
+    }
   }
 }

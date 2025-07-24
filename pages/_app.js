@@ -8,6 +8,8 @@ import ScrollProgress from '../components/UI/ScrollProgress';
 import ScrollHandle from '../components/UI/ScrollHandle';
 import OfflineNotification from '../components/UI/OfflineNotification';
 import GlobalNotificationManager from '../components/UI/GlobalNotificationManager';
+import { testNotification } from '../utils/notifications';
+import notificationManager from '../utils/notificationManager';
 
 function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
@@ -59,6 +61,15 @@ function MyApp({ Component, pageProps }) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         console.log('Service Worker已接管页面，可以发送通知');
       });
+    }
+    
+    // 在开发模式下暴露测试函数到全局
+    if (process.env.NODE_ENV === 'development') {
+      window.testNotification = testNotification;
+      window.notificationManager = notificationManager;
+      console.log('已在全局暴露测试函数:');
+      console.log('- window.testNotification() - 测试基础通知功能');
+      console.log('- window.notificationManager - 通知管理器实例');
     }
     
     return () => window.removeEventListener('hashchange', handleHashChange);
