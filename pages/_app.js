@@ -7,6 +7,7 @@ import { getFromRemoteCache } from '../utils/syncService';
 import ScrollProgress from '../components/UI/ScrollProgress';
 import ScrollHandle from '../components/UI/ScrollHandle';
 import OfflineNotification from '../components/UI/OfflineNotification';
+import GlobalNotificationManager from '../components/UI/GlobalNotificationManager';
 
 function MyApp({ Component, pageProps }) {
   const [mounted, setMounted] = useState(false);
@@ -77,6 +78,7 @@ function MyApp({ Component, pageProps }) {
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         </Head>
         <OfflineNotification /> {/* 保留此组件用于监听离线状态 */}
+        <GlobalNotificationManager />
         <ScrollProgress />
         <ScrollHandle />
         <Component {...pageProps} />

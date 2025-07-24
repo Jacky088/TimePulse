@@ -341,12 +341,14 @@ export function TimerProvider({ children }) {
     setActiveTimerId(newTimer.id);
     console.log(`已添加计时器: ${newTimer.name} (${newTimer.type || 'countdown'}) - ${new Date().toLocaleString()}`);
     
-    // 只为倒计时类型设置通知
+    // 只为倒计时类型设置通知（异步处理，不阻塞UI）
     if (newTimer.type === 'countdown' || !newTimer.type) {
       scheduleCountdownNotification({
         id: newTimer.id,
         title: newTimer.name,
         targetTime: new Date(newTimer.targetDate).getTime()
+      }).catch(error => {
+        console.log('设置通知失败:', error);
       });
     }
     
@@ -388,12 +390,14 @@ export function TimerProvider({ children }) {
       // 获取更新后的计时器对象
       const updatedTimer = newTimers.find(t => t.id === id);
       
-      // 只为倒计时更新通知
+      // 只为倒计时更新通知（异步处理，不阻塞UI）
       if (updatedTimer && (updatedTimer.type === 'countdown' || !updatedTimer.type)) {
         scheduleCountdownNotification({
           id: updatedTimer.id,
           title: updatedTimer.name,
           targetTime: new Date(updatedTimer.targetDate).getTime()
+        }).catch(error => {
+          console.log('更新通知失败:', error);
         });
       }
       

@@ -131,7 +131,7 @@ export default function TimerDisplay() {
           checkAndUpdateDefaultTimer();
         }
         
-        // 当倒计时结束时调用通知函数
+        // 当倒计时结束时发送通知
         scheduleCountdownNotification({
           id: timer.id,
           title: timer.name,

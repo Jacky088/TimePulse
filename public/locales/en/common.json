@@ -329,5 +329,18 @@
     "Africa_Lagos": "Lagos",
     "Africa_Nairobi": "Nairobi",
     "Africa_Casablanca": "Casablanca"
+  },
+  "notification": {
+    "title": "Enable Notifications?",
+    "description": "When enabled, you'll receive notification reminders when countdowns end and the webpage is open.",
+    "iosHint": "iOS devices need to add this app to the home screen first to successfully enable notifications.",
+    "allow": "Allow",
+    "deny": "Don't ask again",
+    "requesting": "Requesting...",
+    "success": "Notification permission granted!",
+    "successMessage": "You'll receive notifications when countdowns end",
+    "failed": "Failed to get notification permission",
+    "failedMessage": "Please check browser settings or try again later",
+    "failedRetry": "Returning to permission request in 3 seconds"
   }
 }

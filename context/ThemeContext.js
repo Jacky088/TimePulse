@@ -28,6 +28,9 @@ export function ThemeProvider({ children }) {
     if (savedColor) {
       setAccentColor(savedColor);
       updateCssVariables(savedColor);
+    } else {
+      // 如果没有保存的颜色，使用默认主题色并设置CSS变量
+      updateCssVariables('#0ea5e9');
     }
   }, []);
 

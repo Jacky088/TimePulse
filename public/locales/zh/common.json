@@ -329,5 +329,18 @@
     "Africa_Lagos": "拉各斯",
     "Africa_Nairobi": "内罗毕",
     "Africa_Casablanca": "卡萨布兰卡"
+  },
+  "notification": {
+    "title": "是否开启通知功能？",
+    "description": "开启后，当倒计时结束，且网页打开时，将会发送通知提醒。",
+    "iosHint": "iOS设备需先将此应用添加到主屏幕后，才能成功开启通知。",
+    "allow": "允许",
+    "deny": "不再提醒",
+    "requesting": "请求中...",
+    "success": "通知权限获取成功！",
+    "successMessage": "您将在倒计时结束时收到通知提醒",
+    "failed": "通知权限获取失败",
+    "failedMessage": "请检查浏览器设置，或稍后重试",
+    "failedRetry": "3秒后将返回权限请求页面"
   }
 }

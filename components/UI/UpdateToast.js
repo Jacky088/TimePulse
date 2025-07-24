@@ -53,7 +53,7 @@ export default function UpdateToast() {
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
-                  <FiRefreshCw className="w-6 h-6 text-blue-500" />
+                  <FiRefreshCw className="w-6 h-6 text-primary-500" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -81,8 +81,8 @@ export default function UpdateToast() {
                 disabled={isRefreshing}
                 className={`flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors ${
                   isRefreshing 
-                    ? 'bg-blue-400 cursor-not-allowed' 
-                    : 'bg-blue-500 hover:bg-blue-600'
+                    ? 'bg-primary-400 cursor-not-allowed' 
+                    : 'bg-primary-500 hover:bg-primary-600'
                 }`}
               >
                 <FiRefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
