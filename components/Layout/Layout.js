@@ -26,11 +26,11 @@ export default function Layout({ children }) {
     [0, 16]
   );
   
-  // Footer的z-index随滚动逐渐增加
+  // Footer的z-index随滚动逐渐增加，但保持在Header之下
   const footerZIndex = useTransform(
     scrollYProgress,
     [0, 0.3, 0.8, 1],
-    [1, 5, 15, 30]
+    [1, 5, 15, 35]
   );
   
   // 监听滚动到底部事件

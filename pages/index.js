@@ -32,6 +32,23 @@ export default function Home() {
   const [isWorldClockModalOpen, setIsWorldClockModalOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [log, setLog] = useState([]);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+  
+  // 监听滚动事件，检测是否接近底部（与Layout中的逻辑保持一致）
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // 与Layout中相同的逻辑：当滚动接近底部时隐藏按钮
+      const isNearBottom = scrollPosition + windowHeight >= documentHeight - 100;
+      setIsFooterVisible(isNearBottom);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   // 添加日志
   const addLog = (message) => {
     setLog(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
@@ -114,8 +131,17 @@ export default function Home() {
       </Layout>
       
       {/* 将按钮移到Layout组件外部，确保它们总是在最上层 */}
-      {/* 添加计时器按钮 - 保持使用动态主题色 */}
-      <div className="fixed bottom-6 right-6" style={{ zIndex: 50 }}>
+      {/* 添加计时器按钮 - 保持使用动态主题色，在Footer显示时隐藏 */}
+      <motion.div 
+        className="fixed bottom-6 right-6" 
+        style={{ zIndex: 50 }}
+        animate={{ 
+          opacity: isFooterVisible ? 0 : 1,
+          scale: isFooterVisible ? 0.8 : 1,
+          pointerEvents: isFooterVisible ? 'none' : 'auto'
+        }}
+        transition={{ duration: 0.3 }}
+      >
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -131,10 +157,19 @@ export default function Home() {
         >
           <FaPlus className="text-xl" />
         </motion.button>
-      </div>
-      
-      {/* 分享按钮 - 保持使用动态主题色 */}
-      <div className="fixed bottom-6 left-6" style={{ zIndex: 50 }}>
+      </motion.div>
+
+      {/* 分享按钮 - 保持使用动态主题色，在Footer显示时隐藏 */}
+      <motion.div 
+        className="fixed bottom-6 left-6" 
+        style={{ zIndex: 50 }}
+        animate={{ 
+          opacity: isFooterVisible ? 0 : 1,
+          scale: isFooterVisible ? 0.8 : 1,
+          pointerEvents: isFooterVisible ? 'none' : 'auto'
+        }}
+        transition={{ duration: 0.3 }}
+      >
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -150,9 +185,7 @@ export default function Home() {
         >
           <FaShareAlt className="text-xl" />
         </motion.button>
-      </div>
-      
-      {/* 弹窗内容 */}
+      </motion.div>      {/* 弹窗内容 */}
       <AnimatePresence>
         {isTimerTypeModalOpen && (
           <TimerTypeModal 

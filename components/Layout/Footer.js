@@ -89,8 +89,8 @@ export default function Footer() {
   };
 
   return (
-    <div className="pointer-events-auto w-full flex items-center justify-center text-gray-800 dark:text-white px-4 py-8">
-      <div className="w-full max-w-4xl glass-card p-3 sm:p-4 md:p-6 rounded-2xl max-h-[80vh] overflow-y-auto">
+    <div className="pointer-events-auto w-full flex items-start justify-center text-gray-800 dark:text-white px-4 py-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+      <div className="w-full max-w-4xl glass-card p-3 sm:p-4 md:p-6 rounded-2xl max-h-[calc(100vh-10rem)] sm:max-h-[calc(100vh-12rem)] overflow-y-auto mt-4">
         {/* 在移动设备上使用更紧凑的布局 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
           <div>
