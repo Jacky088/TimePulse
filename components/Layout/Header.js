@@ -103,7 +103,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40">
-      <nav className="glass-card mx-4 mt-4 px-6 py-4 grid grid-cols-3 items-center">
+      <nav className="glass-card mx-4 mt-4 px-6 py-4 flex md:grid md:grid-cols-3 items-center justify-between">
         {/* Logo - 增强渐变效果，使用较深的相似色 */}
         <motion.div 
           className="flex items-center justify-start"
@@ -157,64 +157,79 @@ export default function Header() {
 
         {/* 右侧按钮组 */}
         <div className="flex items-center justify-end">
-          {/* 全屏按钮 */}
-          <button
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
-            onClick={toggleFullscreen}
-            data-umami-event={isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}
-          >
-            {isFullscreen ? <FiMinimize className="text-xl" /> : <FiMaximize className="text-xl" />}
-          </button>
-          
-          {/* 登录按钮 */}
-          <button
-            className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
-            onClick={openLoginModal}
-            data-umami-event={t('header.login')}
-          >
-            <FiUser className="text-xl" />
-          </button>
-          
-          {/* 主题切换 */}
-          <button
-            className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
-            onClick={toggleTheme}
-            data-umami-event={t('header.themeToggle')}
-          >
-            {theme === 'dark' ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
-          </button>
+          {/* 桌面端所有按钮 */}
+          <div className="hidden md:flex items-center">
+            {/* 全屏按钮 */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={toggleFullscreen}
+              data-umami-event={isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}
+            >
+              {isFullscreen ? <FiMinimize className="text-xl" /> : <FiMaximize className="text-xl" />}
+            </button>
+            
+            {/* 登录按钮 */}
+            <button
+              className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={openLoginModal}
+              data-umami-event={t('header.login')}
+            >
+              <FiUser className="text-xl" />
+            </button>
+            
+            {/* 主题切换 */}
+            <button
+              className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={toggleTheme}
+              data-umami-event={t('header.themeToggle')}
+            >
+              {theme === 'dark' ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
+            </button>
 
-          {/* 语言切换 */}
-          <button
-            className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
-            onClick={() => setIsLanguageOpen(true)}
-            data-umami-event={t('header.languageSelect')}
-          >
-            <FiGlobe className="text-xl" />
-          </button>
+            {/* 语言切换 */}
+            <button
+              className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={() => setIsLanguageOpen(true)}
+              data-umami-event={t('header.languageSelect')}
+            >
+              <FiGlobe className="text-xl" />
+            </button>
 
-          {/* 设置按钮 */}
-          <button
-            className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
-            onClick={() => {
-              setIsManageOpen(true);
-              if (window.location.hash !== '#manage') {
-                window.location.hash = 'manage';
-              }
-            }}
-            data-umami-event={t('header.manage')}
-          >
-            <FiSettings className="text-xl" />
-          </button>
+            {/* 设置按钮 */}
+            <button
+              className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={() => {
+                setIsManageOpen(true);
+                if (window.location.hash !== '#manage') {
+                  window.location.hash = 'manage';
+                }
+              }}
+              data-umami-event={t('header.manage')}
+            >
+              <FiSettings className="text-xl" />
+            </button>
+          </div>
 
-          {/* 移动端菜单按钮 */}
-          <button
-            className="p-2 ml-2 md:hidden rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            data-umami-event={t('header.menu')}
-          >
-            {isMenuOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
-          </button>
+          {/* 移动端只显示登录和菜单按钮 */}
+          <div className="flex items-center md:hidden">
+            {/* 移动端登录按钮 */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={openLoginModal}
+              data-umami-event={t('header.login')}
+            >
+              <FiUser className="text-xl" />
+            </button>
+
+            {/* 移动端菜单按钮 */}
+            <button
+              className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              data-umami-event={t('header.menu')}
+            >
+              {isMenuOpen ? <FiX className="text-xl" /> : <FiMenu className="text-xl" />}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -225,36 +240,101 @@ export default function Header() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="glass-card mx-4 mt-2 p-4 md:hidden"
+            className="glass-card mx-4 mt-2 p-4 md:hidden max-h-[70vh] overflow-y-auto"
           >
-            <div className="flex flex-col space-y-2">
-              {timers.map(timer => (
-                <motion.button
-                  key={timer.id}
-                  layout
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`px-4 py-2 rounded-lg text-left ${
-                    activeTimerId === timer.id 
-                      ? 'text-white' 
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
-                  style={
-                    activeTimerId === timer.id 
-                      ? { backgroundColor: timer.color || '#0ea5e9' } 
-                      : {}
-                  }
+            {/* 功能按钮区域 - 分两行，每行两个，放在上面 */}
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('header.functions')}</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {/* 第一行 */}
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
                   onClick={() => {
-                    setActiveTimerId(timer.id);
+                    toggleFullscreen();
                     setIsMenuOpen(false);
                   }}
-                  data-umami-event="移动端切换计时器"
+                  data-umami-event={isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}
                 >
-                  {timer.name}
-                </motion.button>
-              ))}
+                  {isFullscreen ? <FiMinimize className="text-xl" /> : <FiMaximize className="text-xl" />}
+                  <span className="text-xs ml-2 flex-1 text-right">{isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}</span>
+                </button>
+
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  onClick={() => {
+                    toggleTheme();
+                    setIsMenuOpen(false);
+                  }}
+                  data-umami-event={t('header.themeToggle')}
+                >
+                  {theme === 'dark' ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
+                  <span className="text-xs ml-2 flex-1 text-right">{t('header.themeToggle')}</span>
+                </button>
+
+                {/* 第二行 */}
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setIsLanguageOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                  data-umami-event={t('header.languageSelect')}
+                >
+                  <FiGlobe className="text-xl" />
+                  <span className="text-xs ml-2 flex-1 text-right">{t('header.language')}</span>
+                </button>
+
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setIsManageOpen(true);
+                    setIsMenuOpen(false);
+                    if (window.location.hash !== '#manage') {
+                      window.location.hash = 'manage';
+                    }
+                  }}
+                  data-umami-event={t('header.manage')}
+                >
+                  <FiSettings className="text-xl" />
+                  <span className="text-xs ml-2 flex-1 text-right">{t('header.settings')}</span>
+                </button>
+              </div>
             </div>
+
+            {/* 计时器选择区域 - 只有有滚动条时才显示，放在下面 */}
+            {timers.length > 0 && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('header.timers')}</h3>
+                <div className="flex flex-col space-y-2 max-h-48 overflow-y-auto">
+                  {timers.map(timer => (
+                    <motion.button
+                      key={timer.id}
+                      layout
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className={`px-4 py-2 rounded-lg text-left ${
+                        activeTimerId === timer.id 
+                          ? 'text-white' 
+                          : 'bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20'
+                      }`}
+                      style={
+                        activeTimerId === timer.id 
+                          ? { backgroundColor: timer.color || '#0ea5e9' } 
+                          : {}
+                      }
+                      onClick={() => {
+                        setActiveTimerId(timer.id);
+                        setIsMenuOpen(false);
+                      }}
+                      data-umami-event="移动端切换计时器"
+                    >
+                      {timer.name}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

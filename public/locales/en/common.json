@@ -22,7 +22,7 @@
     "fullscreen": "Enter Fullscreen",
     "exitFullscreen": "Exit Fullscreen",
     "login": "Login",
-    "settings": "Settings",
+    "settings": "Timer Settings",
     "themeToggle": "Toggle Theme",
     "language": "Language",
     "languageSelect": "Select Language",
@@ -32,7 +32,9 @@
     "english": "English",
     "englishUS": "English (US)",
     "menu": "Menu",
-    "manage": "Manage Timers"
+    "manage": "Manage Timers",
+    "timers": "Timers",
+    "functions": "Functions"
   },
   "timer": {
     "noActiveTimer": "No active timer",

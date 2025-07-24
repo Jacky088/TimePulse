@@ -22,7 +22,7 @@
     "fullscreen": "进入全屏",
     "exitFullscreen": "退出全屏",
     "login": "登录",
-    "settings": "设置",
+    "settings": "设置计时器",
     "themeToggle": "切换主题",
     "language": "语言",
     "languageSelect": "选择语言",
@@ -32,7 +32,9 @@
     "english": "English",
     "englishUS": "English (US)",
     "menu": "菜单",
-    "manage": "管理计时器"
+    "manage": "管理计时器",
+    "timers": "计时器",
+    "functions": "功能"
   },
   "timer": {
     "noActiveTimer": "没有活动的计时器",
