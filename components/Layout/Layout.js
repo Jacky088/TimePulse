@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Header from './Header';
 import Footer from './Footer';
+import UpdateToast from '../UI/UpdateToast';
 import { ThemeColorSynchronizer } from '../../context/ThemeContext';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -73,6 +74,9 @@ export default function Layout({ children }) {
         <Header />
         
         {children}
+        
+        {/* 添加更新提示 Toast */}
+        <UpdateToast />
         
         {/* 修改 Footer 容器，适应不同屏幕大小 */}
         <motion.div 

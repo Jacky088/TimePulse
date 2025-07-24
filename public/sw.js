@@ -156,35 +156,167 @@ self.addEventListener('message', event => {
         .then(cache => {
           console.log('正在更新缓存...');
           
-          // 重新获取核心资源
+          // 重新获取核心资源并检查是否有更新
           return Promise.allSettled(
             urlsToCache.map(url => 
-              fetch(url, { cache: 'reload' }) // 强制绕过浏览器缓存
-                .then(response => {
-                  if (!response || !response.ok) {
-                    console.log(`更新缓存失败: ${url}`);
-                    return;
-                  }
-                  return cache.put(url, response);
-                })
-                .catch(err => console.log(`更新缓存资源失败: ${url}, 错误: ${err}`))
+              // 先获取缓存中的资源
+              cache.match(url).then(cachedResponse => {
+                return fetch(url, { cache: 'reload' }) // 强制绕过浏览器缓存
+                  .then(networkResponse => {
+                    if (!networkResponse || !networkResponse.ok) {
+                      console.log(`更新缓存失败: ${url}`);
+                      return { updated: false };
+                    }
+                    
+                    // 比较 ETag 或 Last-Modified 来检查是否有更新
+                    let hasUpdate = false;
+                    if (cachedResponse) {
+                      const cachedETag = cachedResponse.headers.get('etag');
+                      const networkETag = networkResponse.headers.get('etag');
+                      const cachedLastModified = cachedResponse.headers.get('last-modified');
+                      const networkLastModified = networkResponse.headers.get('last-modified');
+                      
+                      if (cachedETag && networkETag) {
+                        hasUpdate = cachedETag !== networkETag;
+                      } else if (cachedLastModified && networkLastModified) {
+                        hasUpdate = cachedLastModified !== networkLastModified;
+                      } else {
+                        // 如果没有 ETag 或 Last-Modified，比较内容长度
+                        hasUpdate = cachedResponse.headers.get('content-length') !== networkResponse.headers.get('content-length');
+                      }
+                    } else {
+                      // 如果缓存中没有，说明是新资源
+                      hasUpdate = true;
+                    }
+                    
+                    return cache.put(url, networkResponse.clone()).then(() => ({
+                      updated: hasUpdate,
+                      url: url
+                    }));
+                  })
+                  .catch(err => {
+                    console.log(`更新缓存资源失败: ${url}, 错误: ${err}`);
+                    return { updated: false };
+                  });
+              })
             )
-          ).then(() => {
+          ).then(results => {
+            // 检查是否有任何资源更新
+            const hasUpdates = results.some(result => 
+              result.status === 'fulfilled' && result.value.updated
+            );
+            
             // 通知客户端缓存已更新
             self.clients.matchAll().then(clients => {
               clients.forEach(client => {
                 client.postMessage({
                   action: 'cacheUpdated',
-                  timestamp: Date.now()
+                  timestamp: Date.now(),
+                  hasUpdates: hasUpdates
                 });
               });
             });
-            console.log('缓存已成功更新');
+            
+            if (hasUpdates) {
+              console.log('缓存已更新，发现新内容');
+            } else {
+              console.log('缓存已检查，无新内容');
+            }
           });
         })
     );
+  } else if (data.action === 'checkForUpdates') {
+    // 处理检查更新请求（页面加载时）
+    event.waitUntil(
+      checkForUpdatesAndNotify(data.isInitialLoad || false)
+    );
   }
 });
+
+// 检查更新并通知的辅助函数
+async function checkForUpdatesAndNotify(isInitialLoad = false) {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    console.log(isInitialLoad ? '页面加载时检查更新...' : '检查更新...');
+    
+    const updateResults = await Promise.allSettled(
+      urlsToCache.map(async url => {
+        try {
+          const cachedResponse = await cache.match(url);
+          const networkResponse = await fetch(url, { cache: 'no-cache' });
+          
+          if (!networkResponse || !networkResponse.ok) {
+            return { url, updated: false, error: 'Network response not ok' };
+          }
+          
+          let hasUpdate = false;
+          if (cachedResponse) {
+            // 比较 ETag 或 Last-Modified
+            const cachedETag = cachedResponse.headers.get('etag');
+            const networkETag = networkResponse.headers.get('etag');
+            const cachedLastModified = cachedResponse.headers.get('last-modified');
+            const networkLastModified = networkResponse.headers.get('last-modified');
+            
+            if (cachedETag && networkETag) {
+              hasUpdate = cachedETag !== networkETag;
+            } else if (cachedLastModified && networkLastModified) {
+              hasUpdate = cachedLastModified !== networkLastModified;
+            } else {
+              // 比较内容长度
+              const cachedLength = cachedResponse.headers.get('content-length');
+              const networkLength = networkResponse.headers.get('content-length');
+              hasUpdate = cachedLength !== networkLength;
+            }
+          } else {
+            // 缓存中没有此资源，视为有更新
+            hasUpdate = true;
+          }
+          
+          if (hasUpdate) {
+            // 更新缓存
+            await cache.put(url, networkResponse.clone());
+          }
+          
+          return { url, updated: hasUpdate };
+        } catch (error) {
+          console.log(`检查 ${url} 更新失败:`, error);
+          return { url, updated: false, error: error.message };
+        }
+      })
+    );
+    
+    // 统计更新结果
+    const successfulResults = updateResults
+      .filter(result => result.status === 'fulfilled')
+      .map(result => result.value);
+    
+    const hasUpdates = successfulResults.some(result => result.updated);
+    const updatedUrls = successfulResults
+      .filter(result => result.updated)
+      .map(result => result.url);
+    
+    // 通知所有客户端
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({
+        action: hasUpdates ? 'cacheUpdatedWithChanges' : 'cacheChecked',
+        timestamp: Date.now(),
+        hasUpdates: hasUpdates,
+        updatedUrls: updatedUrls,
+        isInitialLoad: isInitialLoad
+      });
+    });
+    
+    if (hasUpdates) {
+      console.log(`发现 ${updatedUrls.length} 个资源更新:`, updatedUrls);
+    } else {
+      console.log('检查完成，无更新内容');
+    }
+    
+  } catch (error) {
+    console.error('检查更新失败:', error);
+  }
+}
 
 // 显示通知的函数
 function showNotification(title, body, id) {

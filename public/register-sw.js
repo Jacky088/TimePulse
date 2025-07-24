@@ -25,12 +25,27 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(reg => {
       console.log('ServiceWorker 已准备就绪');
       
+      // 页面加载时检查更新
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          action: 'checkForUpdates',
+          isInitialLoad: true
+        });
+      }
+      
       // 监听从SW发来的消息
       navigator.serviceWorker.addEventListener('message', event => {
         if (event.data && event.data.action === 'cacheUpdated') {
           console.log('缓存已更新：', new Date(event.data.timestamp).toLocaleString());
           // 这里可以显示缓存更新的通知或提示
           window.dispatchEvent(new CustomEvent('cacheUpdated', { detail: event.data }));
+        } else if (event.data && event.data.action === 'cacheUpdatedWithChanges') {
+          console.log('缓存已更新，发现新内容：', new Date(event.data.timestamp).toLocaleString());
+          // 派发带有更新信息的事件
+          window.dispatchEvent(new CustomEvent('cacheUpdatedWithChanges', { detail: event.data }));
+        } else if (event.data && event.data.action === 'cacheChecked') {
+          console.log('缓存检查完成，无更新：', new Date(event.data.timestamp).toLocaleString());
+          window.dispatchEvent(new CustomEvent('cacheChecked', { detail: event.data }));
         }
       });
     }).catch(error => {

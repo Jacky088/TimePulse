@@ -210,6 +210,13 @@
     "about": "关于 TimePulse",
     "scrollDown": "向下滑动查看更多信息"
   },
+  "updateToast": {
+    "title": "应用已更新",
+    "message": "发现新版本，建议刷新页面以获得最佳体验",
+    "refresh": "刷新",
+    "refreshing": "刷新中...",
+    "later": "稍后"
+  },
   "controls": {
     "start": "开始",
     "pause": "暂停",

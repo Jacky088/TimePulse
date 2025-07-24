@@ -210,6 +210,13 @@
     "about": "About TimePulse",
     "scrollDown": "Scroll down to view more information"
   },
+  "updateToast": {
+    "title": "App Updated",
+    "message": "New version available, refresh the page for the best experience",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "later": "Later"
+  },
   "controls": {
     "start": "Start",
     "pause": "Pause",
