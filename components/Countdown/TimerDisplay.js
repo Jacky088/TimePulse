@@ -132,11 +132,16 @@ export default function TimerDisplay() {
         }
         
         // 当倒计时结束时发送通知
-        scheduleCountdownNotification({
-          id: timer.id,
-          title: timer.name,
-          targetTime: Date.now()
-        });
+        try {
+          console.log('倒计时结束，尝试发送通知:', timer.name);
+          scheduleCountdownNotification({
+            id: timer.id,
+            title: timer.name,
+            targetTime: Date.now()
+          });
+        } catch (error) {
+          console.error('发送倒计时结束通知失败:', error);
+        }
       }
       return;
     }

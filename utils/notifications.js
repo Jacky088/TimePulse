@@ -62,7 +62,10 @@ async function checkNotificationPermission() {
     return false;
   }
 
-  return Notification.permission === 'granted';
+  const permission = Notification.permission;
+  console.log('当前通知权限状态:', permission);
+  
+  return permission === 'granted';
 }
 
 /**
@@ -98,8 +101,10 @@ export async function requestNotificationPermission() {
  * @returns {Promise<{success: boolean, needsPermission: boolean}>} 操作结果
  */
 export async function scheduleCountdownNotification(countdown, skipPermissionCheck = false) {
+  console.log('scheduleCountdownNotification 被调用:', { countdown, skipPermissionCheck });
+  
   if (!countdown || !countdown.targetTime || !countdown.title) {
-    console.error('无效的倒计时数据');
+    console.error('无效的倒计时数据:', countdown);
     return { success: false, needsPermission: false };
   }
 
@@ -111,6 +116,7 @@ export async function scheduleCountdownNotification(countdown, skipPermissionChe
 
   // 如果不跳过权限检查，检查是否需要显示权限弹窗
   if (!skipPermissionCheck && shouldShowNotificationModal()) {
+    console.log('需要显示权限弹窗');
     // 派发需要权限的事件
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('needNotificationPermission', {
@@ -136,11 +142,18 @@ export async function scheduleCountdownNotification(countdown, skipPermissionChe
     id: countdown.id
   };
 
+  console.log('准备发送通知数据到Service Worker:', notificationData);
+
   // 如果Service Worker已激活，直接发送消息
   if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage(notificationData);
-    console.log('已设置倒计时通知:', countdown.title);
-    return { success: true, needsPermission: false };
+    try {
+      navigator.serviceWorker.controller.postMessage(notificationData);
+      console.log('已设置倒计时通知:', countdown.title);
+      return { success: true, needsPermission: false };
+    } catch (error) {
+      console.error('发送消息到Service Worker失败:', error);
+      return { success: false, needsPermission: false };
+    }
   }
 
   // 如果Service Worker尚未激活，将通知加入等待队列
@@ -179,11 +192,65 @@ export async function scheduleCountdownNotification(countdown, skipPermissionChe
  * @param {string} countdownId - 倒计时ID
  */
 export function cancelCountdownNotification(countdownId) {
+  console.log('取消通知:', countdownId);
+  
   if ('serviceWorker' in navigator) {
+    // 通知Service Worker取消定时器
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        action: 'cancelNotification',
+        id: countdownId
+      });
+    }
+    
+    // 同时清理已显示的通知
     navigator.serviceWorker.ready.then(registration => {
       registration.getNotifications({ tag: countdownId }).then(notifications => {
-        notifications.forEach(notification => notification.close());
+        notifications.forEach(notification => {
+          notification.close();
+          console.log('已关闭通知:', countdownId);
+        });
       });
     });
+  }
+}
+
+/**
+ * 测试通知功能
+ * @returns {Promise<boolean>} 测试是否成功
+ */
+export async function testNotification() {
+  console.log('开始测试通知功能...');
+  
+  // 检查浏览器支持
+  if (!('Notification' in window)) {
+    console.error('浏览器不支持通知');
+    return false;
+  }
+  
+  // 检查权限
+  if (Notification.permission !== 'granted') {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.error('用户拒绝了通知权限');
+      return false;
+    }
+  }
+  
+  // 发送测试通知
+  try {
+    const testCountdown = {
+      id: 'test-' + Date.now(),
+      title: '通知测试',
+      targetTime: Date.now() + 1000 // 1秒后触发
+    };
+    
+    const result = await scheduleCountdownNotification(testCountdown, true);
+    console.log('测试通知调度结果:', result);
+    
+    return result.success;
+  } catch (error) {
+    console.error('测试通知失败:', error);
+    return false;
   }
 }

@@ -58,11 +58,16 @@ export default function CountdownDisplay() {
           }
           
           // 当倒计时结束时发送通知
-          scheduleCountdownNotification({
-            id: timer.id,
-            title: timer.name,
-            targetTime: Date.now() // 设置为当前时间以立即触发
-          });
+          try {
+            console.log('倒计时结束，尝试发送通知:', timer.name);
+            scheduleCountdownNotification({
+              id: timer.id,
+              title: timer.name,
+              targetTime: Date.now() // 设置为当前时间以立即触发
+            });
+          } catch (error) {
+            console.error('发送倒计时结束通知失败:', error);
+          }
         }
         return;
       }

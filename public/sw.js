@@ -137,18 +137,52 @@ self.addEventListener('message', event => {
   if (data.action === 'scheduleNotification') {
     const { title, timestamp, body, id } = data;
     
+    console.log('收到通知调度请求:', { title, timestamp, id });
+    
     // 计算倒计时剩余时间
     const timeUntilNotification = timestamp - Date.now();
     
+    console.log('距离通知时间还有:', timeUntilNotification, 'ms');
+    
     if (timeUntilNotification <= 0) {
       // 如果时间已过，立即发送通知
+      console.log('立即发送通知:', title);
       showNotification(title, body, id);
     } else {
       // 设置定时器，到时间时发送通知
-      setTimeout(() => {
+      console.log('设置定时器，将在', timeUntilNotification, 'ms后发送通知');
+      
+      // 为了提高可靠性，我们同时使用多种方式来确保通知能够发送
+      const timerId = setTimeout(() => {
+        console.log('定时器触发，发送通知:', title);
         showNotification(title, body, id);
       }, timeUntilNotification);
+      
+      // 存储定时器ID，以便后续可能的取消操作
+      if (!self.activeTimers) {
+        self.activeTimers = new Map();
+      }
+      self.activeTimers.set(id, timerId);
     }
+  } else if (data.action === 'cancelNotification') {
+    // 处理取消通知请求
+    const { id } = data;
+    console.log('收到取消通知请求:', id);
+    
+    if (self.activeTimers && self.activeTimers.has(id)) {
+      const timerId = self.activeTimers.get(id);
+      clearTimeout(timerId);
+      self.activeTimers.delete(id);
+      console.log('已取消通知定时器:', id);
+    }
+    
+    // 同时取消已显示的通知
+    self.registration.getNotifications({ tag: id }).then(notifications => {
+      notifications.forEach(notification => {
+        notification.close();
+        console.log('已关闭通知:', id);
+      });
+    });
   } else if (data.action === 'updateCache') {
     // 处理缓存更新请求
     event.waitUntil(
@@ -320,17 +354,28 @@ async function checkForUpdatesAndNotify(isInitialLoad = false) {
 
 // 显示通知的函数
 function showNotification(title, body, id) {
-  self.registration.showNotification(title, {
-    body: body || '倒计时已结束！',
-    icon: '/android-chrome-192x192.png',
-    badge: '/favicon.ico',
-    tag: id,
-    vibrate: [200, 100, 200],
-    requireInteraction: true,
-    data: {
-      countdownId: id
-    }
-  });
+  console.log('显示通知:', { title, body, id });
+  
+  try {
+    self.registration.showNotification(title, {
+      body: body || '倒计时已结束！',
+      icon: '/android-chrome-192x192.png',
+      badge: '/favicon.ico',
+      tag: id,
+      vibrate: [200, 100, 200],
+      requireInteraction: true,
+      data: {
+        countdownId: id
+      },
+      // 添加额外的选项以提高兼容性
+      silent: false,
+      renotify: true,
+      timestamp: Date.now()
+    });
+    console.log('通知显示成功:', title);
+  } catch (error) {
+    console.error('显示通知失败:', error);
+  }
 }
 
 // 处理通知点击事件
