@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave } from 'react-icons/fi';
+import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe } from 'react-icons/fi';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
 import LoginModal from '../UI/LoginModal';
@@ -15,6 +15,7 @@ export default function Header() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [editingTimer, setEditingTimer] = useState(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 
   // 打开登录模态框
   const openLoginModal = () => {
@@ -34,6 +35,14 @@ export default function Header() {
       document.exitFullscreen();
     }
     setIsFullscreen(!isFullscreen);
+  };
+
+  // 处理语言切换
+  const switchLanguage = (lang) => {
+    const url = new URL(window.location);
+    url.searchParams.set('lang', lang);
+    window.location.href = url.toString();
+    setIsLanguageOpen(false);
   };
 
   // 开始编辑计时器
@@ -94,10 +103,10 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40">
-      <nav className="glass-card mx-4 mt-4 px-6 py-4 flex items-center justify-between">
+      <nav className="glass-card mx-4 mt-4 px-6 py-4 grid grid-cols-3 items-center">
         {/* Logo - 增强渐变效果，使用较深的相似色 */}
         <motion.div 
-          className="flex items-center"
+          className="flex items-center justify-start"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
@@ -112,40 +121,42 @@ export default function Header() {
           </h1>
         </motion.div>
 
-        {/* 计时器选择器 - 桌面版 - 使用动画过渡消除闪烁 */}
-        <div className="hidden md:flex space-x-4 overflow-x-auto py-2 max-w-md">
-          {/* 移除 AnimatePresence 的 mode="wait" 属性，允许多个子元素同时动画 */}
-          <AnimatePresence>
-            {timers.map(timer => (
-              <motion.button
-                key={timer.id}
-                layout
-                layoutId={`timer-${timer.id}`}
-                initial={{ opacity: 0.8, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0.8, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                  activeTimerId === timer.id 
-                    ? 'text-white' 
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-                style={
-                  activeTimerId === timer.id 
-                    ? { backgroundColor: timer.color || '#0ea5e9' } 
-                    : {}
-                }
-                onClick={() => setActiveTimerId(timer.id)}
-                data-umami-event="切换计时器"
-              >
-                {timer.name}
-              </motion.button>
-            ))}
-          </AnimatePresence>
+        {/* 计时器选择器 - 桌面版 - 居中显示 */}
+        <div className="hidden md:flex justify-center">
+          <div className="flex space-x-4 overflow-x-auto py-2 max-w-md">
+            {/* 移除 AnimatePresence 的 mode="wait" 属性，允许多个子元素同时动画 */}
+            <AnimatePresence>
+              {timers.map(timer => (
+                <motion.button
+                  key={timer.id}
+                  layout
+                  layoutId={`timer-${timer.id}`}
+                  initial={{ opacity: 0.8, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0.8, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                    activeTimerId === timer.id 
+                      ? 'text-white' 
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                  style={
+                    activeTimerId === timer.id 
+                      ? { backgroundColor: timer.color || '#0ea5e9' } 
+                      : {}
+                  }
+                  onClick={() => setActiveTimerId(timer.id)}
+                  data-umami-event="切换计时器"
+                >
+                  {timer.name}
+                </motion.button>
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* 右侧按钮组 */}
-        <div className="flex items-center">
+        <div className="flex items-center justify-end">
           {/* 全屏按钮 */}
           <button
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
@@ -171,6 +182,15 @@ export default function Header() {
             data-umami-event="切换主题"
           >
             {theme === 'dark' ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
+          </button>
+
+          {/* 语言切换 */}
+          <button
+            className="p-2 ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+            onClick={() => setIsLanguageOpen(true)}
+            data-umami-event="打开语言选择"
+          >
+            <FiGlobe className="text-xl" />
           </button>
 
           {/* 设置按钮 */}
@@ -396,6 +416,67 @@ export default function Header() {
                   ))}
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 语言切换弹窗 */}
+      <AnimatePresence>
+        {isLanguageOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setIsLanguageOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card w-full max-w-sm m-4 p-6 rounded-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">选择语言 / Select Language</h2>
+                <button
+                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                  onClick={() => setIsLanguageOpen(false)}
+                >
+                  <FiX className="text-xl" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <button
+                  className="w-full px-4 py-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-black/20 text-left transition-all cursor-pointer"
+                  onClick={() => switchLanguage('zh-CN')}
+                  data-umami-event="切换到中文"
+                >
+                  <div className="flex items-center">
+                    <span className="text-2xl mr-3">🇨🇳</span>
+                    <div>
+                      <div className="font-medium">中文</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">简体中文</div>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  className="w-full px-4 py-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-black/20 text-left transition-all cursor-pointer"
+                  onClick={() => switchLanguage('en-US')}
+                  data-umami-event="切换到英文"
+                >
+                  <div className="flex items-center">
+                    <span className="text-2xl mr-3">🇺🇸</span>
+                    <div>
+                      <div className="font-medium">English</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">English (US)</div>
+                    </div>
+                  </div>
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
