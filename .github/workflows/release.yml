@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,18 +62,29 @@ jobs:
       - name: Get Previous Tag
         id: prev_tag
         run: |
-          tag=$(git tag --sort=-creatordate | grep '^v' | grep -v "${{ steps.get_version.outputs.version }}" | head -n1 || echo "none")
+          # 获取所有v开头的标签，按版本排序，排除当前版本
+          current_version="${{ steps.get_version.outputs.version }}"
+          tag=$(git tag -l 'v*' --sort=-version:refname | grep -v "^${current_version}$" | head -n1 || echo "none")
+          echo "Current version: $current_version"
+          echo "Previous tag found: $tag"
           echo "previous_tag=$tag" >> $GITHUB_OUTPUT
 
       - name: Generate Release Notes
         id: release_notes
         run: |
-          echo "🔄 更新日志（${{ steps.prev_tag.outputs.previous_tag }} → ${{ steps.get_version.outputs.version }})" > release.md
-          echo "" >> release.md
           if [ "${{ steps.prev_tag.outputs.previous_tag }}" != "none" ]; then
+            echo "🔄 更新日志(${{ steps.prev_tag.outputs.previous_tag }} → ${{ steps.get_version.outputs.version }})" > release.md
+            echo "" >> release.md
+            echo "## 📝 变更内容" >> release.md
+            echo "" >> release.md
             git log ${{ steps.prev_tag.outputs.previous_tag }}..HEAD --pretty=format:'- [%s](https://github.com/${{ github.repository }}/commit/%H) by @%an' >> release.md
           else
-            git log --pretty=format:'- [%s](https://github.com/${{ github.repository }}/commit/%H) by @%an' >> release.md
+            echo "🔄 更新日志(首次发布 ${{ steps.get_version.outputs.version }})" > release.md
+            echo "" >> release.md
+            echo "## 📝 变更内容" >> release.md
+            echo "" >> release.md
+            echo "- 🎉 首次发布版本" >> release.md
+            echo "- 📦 包含所有核心功能" >> release.md
           fi
           echo "release_body<<EOF" >> $GITHUB_OUTPUT
           cat release.md >> $GITHUB_OUTPUT
