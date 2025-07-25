@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe } from 'react-icons/fi';
+import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe, FiPlus } from 'react-icons/fi';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoginModal from '../UI/LoginModal';
+import TimerTypeModal from '../UI/TimerTypeModal';
+import AddTimerModal from '../UI/AddTimerModal';
+import AddStopwatchModal from '../UI/AddStopwatchModal';
+import AddWorldClockModal from '../UI/AddWorldClockModal';
 import { HexColorPicker } from 'react-colorful';
 
 export default function Header() {
@@ -18,6 +22,11 @@ export default function Header() {
   const [editingTimer, setEditingTimer] = useState(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [isTimerTypeModalOpen, setIsTimerTypeModalOpen] = useState(false);
+  const [isCountdownModalOpen, setIsCountdownModalOpen] = useState(false);
+  const [isStopwatchModalOpen, setIsStopwatchModalOpen] = useState(false);
+  const [isWorldClockModalOpen, setIsWorldClockModalOpen] = useState(false);
+  const [showAllTabs, setShowAllTabs] = useState(false);
 
   // 打开登录模态框
   const openLoginModal = () => {
@@ -88,6 +97,34 @@ export default function Header() {
     setShowColorPicker(false);
   };
 
+  // 处理计时器类型选择
+  const handleTimerTypeSelect = (type) => {
+    setIsTimerTypeModalOpen(false);
+    
+    switch (type) {
+      case 'countdown':
+        setIsCountdownModalOpen(true);
+        break;
+      case 'stopwatch':
+        setIsStopwatchModalOpen(true);
+        break;
+      case 'worldclock':
+        setIsWorldClockModalOpen(true);
+        break;
+    }
+  };
+
+  // 关闭所有模态框
+  const closeAllModals = () => {
+    setIsTimerTypeModalOpen(false);
+    setIsCountdownModalOpen(false);
+    setIsStopwatchModalOpen(false);
+    setIsWorldClockModalOpen(false);
+    if (window.location.hash === '#add') {
+      window.location.hash = '';
+    }
+  };
+
   // 监听全屏状态变化
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -123,34 +160,54 @@ export default function Header() {
 
         {/* 计时器选择器 - 桌面版 - 居中显示 */}
         <div className="hidden md:flex justify-center">
-          <div className="flex space-x-4 overflow-x-auto py-2 max-w-md">
+          <div 
+            className="flex space-x-1 overflow-x-auto py-2 max-w-md scrollbar-hide"
+            onMouseEnter={() => setShowAllTabs(true)} 
+            onMouseLeave={() => setShowAllTabs(false)}
+          >
             {/* 移除 AnimatePresence 的 mode="wait" 属性，允许多个子元素同时动画 */}
             <AnimatePresence>
-              {timers.map(timer => (
-                <motion.button
-                  key={timer.id}
-                  layout
-                  layoutId={`timer-${timer.id}`}
-                  initial={{ opacity: 0.8, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0.8, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                    activeTimerId === timer.id 
-                      ? 'text-white' 
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-                  style={
-                    activeTimerId === timer.id 
-                      ? { backgroundColor: timer.color || '#0ea5e9' } 
-                      : {}
-                  }
-                  onClick={() => setActiveTimerId(timer.id)}
-                  data-umami-event="切换计时器"
-                >
-                  {timer.name}
-                </motion.button>
-              ))}
+              {timers.map(timer => {
+                const isActive = activeTimerId === timer.id;
+                const shouldDisplay = showAllTabs || isActive;
+                
+                return (
+                  <motion.button
+                    key={timer.id}
+                    layout
+                    layoutId={`timer-${timer.id}`}
+                    initial={{ opacity: 0.8, scale: 0.95, maxWidth: isActive ? '200px' : '0px' }}
+                    animate={{ 
+                      opacity: shouldDisplay ? 1 : 0, 
+                      scale: shouldDisplay ? 1 : 0.95,
+                      maxWidth: shouldDisplay ? '200px' : isActive ? '200px' : '0px',
+                      margin: shouldDisplay ? '0 0.25rem' : '0',
+                      padding: shouldDisplay ? '0.25rem 0.75rem' : '0.25rem 0',
+                      pointerEvents: shouldDisplay ? 'auto' : 'none'
+                    }}
+                    exit={{ opacity: 0.8, scale: 0.95 }}
+                    transition={{ 
+                      duration: 0.3, 
+                      ease: "easeInOut",
+                      layout: { type: "spring", stiffness: 300, damping: 30 }
+                    }}
+                    className={`rounded-full text-sm font-medium whitespace-nowrap transition-all transform-gpu ${
+                      isActive 
+                        ? 'text-white' 
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                    style={
+                      isActive 
+                        ? { backgroundColor: timer.color || '#0ea5e9' } 
+                        : {}
+                    }
+                    onClick={() => setActiveTimerId(timer.id)}
+                    data-umami-event="切换计时器"
+                  >
+                    {timer.name}
+                  </motion.button>
+                );
+              })}
             </AnimatePresence>
           </div>
         </div>
@@ -159,6 +216,20 @@ export default function Header() {
         <div className="flex items-center justify-end">
           {/* 桌面端所有按钮 */}
           <div className="hidden md:flex items-center">
+            {/* 添加计时器按钮 */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={() => {
+                setIsTimerTypeModalOpen(true);
+                if (window.location.hash !== '#add') {
+                  window.location.hash = 'add';
+                }
+              }}
+              data-umami-event={t('timer.create')}
+            >
+              <FiPlus className="text-xl" />
+            </button>
+            
             {/* 全屏按钮 */}
             <button
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
@@ -297,6 +368,22 @@ export default function Header() {
                 >
                   <FiSettings className="text-xl" />
                   <span className="text-xs ml-2 flex-1 text-right">{t('header.settings')}</span>
+                </button>
+                
+                {/* 添加"添加计时器"按钮 */}
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg col-span-2 bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-200/60 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setIsTimerTypeModalOpen(true);
+                    setIsMenuOpen(false);
+                    if (window.location.hash !== '#add') {
+                      window.location.hash = 'add';
+                    }
+                  }}
+                  data-umami-event={t('timer.create')}
+                >
+                  <FiPlus className="text-xl" />
+                  <span className="text-xs ml-2 flex-1 text-right">{t('timer.create')}</span>
                 </button>
               </div>
             </div>
@@ -571,6 +658,37 @@ export default function Header() {
               window.location.hash = '';
             }
           }} />
+        )}
+      </AnimatePresence>
+
+      {/* 计时器类型选择模态框 */}
+      <AnimatePresence>
+        {isTimerTypeModalOpen && (
+          <TimerTypeModal 
+            onClose={closeAllModals}
+            onSelectType={handleTimerTypeSelect}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 添加倒计时模态框 */}
+      <AnimatePresence>
+        {isCountdownModalOpen && (
+          <AddTimerModal onClose={closeAllModals} />
+        )}
+      </AnimatePresence>
+
+      {/* 添加正计时模态框 */}
+      <AnimatePresence>
+        {isStopwatchModalOpen && (
+          <AddStopwatchModal onClose={closeAllModals} />
+        )}
+      </AnimatePresence>
+
+      {/* 添加世界时钟模态框 */}
+      <AnimatePresence>
+        {isWorldClockModalOpen && (
+          <AddWorldClockModal onClose={closeAllModals} />
         )}
       </AnimatePresence>
     </header>

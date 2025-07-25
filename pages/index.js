@@ -14,7 +14,7 @@ import LoginModal from '../components/UI/LoginModal';
 import { useTimers } from '../context/TimerContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../hooks/useTranslation';
-import { FaPlus, FaShareAlt, FaExpand, FaCompress } from 'react-icons/fa';
+import { FaShareAlt } from 'react-icons/fa';
 import { parseShareUrl } from '../utils/shareUtils';
 
 export default function Home() {
@@ -131,34 +131,6 @@ export default function Home() {
       </Layout>
       
       {/* 将按钮移到Layout组件外部，确保它们总是在最上层 */}
-      {/* 添加计时器按钮 - 保持使用动态主题色，在Footer显示时隐藏 */}
-      <motion.div 
-        className="fixed bottom-6 right-6" 
-        style={{ zIndex: 50 }}
-        animate={{ 
-          opacity: isFooterVisible ? 0 : 1,
-          scale: isFooterVisible ? 0.8 : 1,
-          pointerEvents: isFooterVisible ? 'none' : 'auto'
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="p-4 rounded-full glass-card shadow-lg cursor-pointer"
-          style={{ color: accentColor }}
-          onClick={() => {
-            setIsTimerTypeModalOpen(true);
-            if (window.location.hash !== '#add') {
-              window.location.hash = 'add';
-            }
-          }}
-          data-umami-event={t('timer.create')}
-        >
-          <FaPlus className="text-xl" />
-        </motion.button>
-      </motion.div>
-
       {/* 分享按钮 - 保持使用动态主题色，在Footer显示时隐藏 */}
       <motion.div 
         className="fixed bottom-6 left-6" 
@@ -185,7 +157,9 @@ export default function Home() {
         >
           <FaShareAlt className="text-xl" />
         </motion.button>
-      </motion.div>      {/* 弹窗内容 */}
+      </motion.div>
+      
+      {/* 弹窗内容 */}
       <AnimatePresence>
         {isTimerTypeModalOpen && (
           <TimerTypeModal 
