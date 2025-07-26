@@ -34,6 +34,57 @@ export default function Header() {
   const tabsScrollRef = useRef(null);
   const hoverTimerRef = useRef(null);
   const leaveTimerRef = useRef(null);
+  const mouseMoveTimerRef = useRef(null);
+  const [lastMouseMove, setLastMouseMove] = useState(Date.now());
+
+  // 处理全局鼠标移动检测
+  const handleGlobalMouseMove = () => {
+    // 如果只有一个或没有标签页，则不执行任何操作
+    if (timers.length <= 1) {
+      return;
+    }
+    
+    // 如果标签栏未展开，则展开它
+    if (!showAllTabs) {
+      setShowAllTabs(true);
+    }
+    
+    setLastMouseMove(Date.now());
+    
+    // 清除之前的隐藏计时器
+    if (mouseMoveTimerRef.current) {
+      clearTimeout(mouseMoveTimerRef.current);
+    }
+    
+    // 设置新的隐藏计时器（5秒后隐藏）
+    mouseMoveTimerRef.current = setTimeout(() => {
+      setShowAllTabs(false);
+    }, 5000);
+  };
+
+  // 处理点击当前标签显示所有标签
+  const handleActiveTabClick = () => {
+    // 如果只有一个或没有标签页，则不执行任何操作
+    if (timers.length <= 1) {
+      return;
+    }
+    
+    if (!showAllTabs) {
+      setShowAllTabs(true);
+      // 清除其他定时器
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+        hoverTimerRef.current = null;
+      }
+      if (leaveTimerRef.current) {
+        clearTimeout(leaveTimerRef.current);
+        leaveTimerRef.current = null;
+      }
+      // 启动鼠标移动检测
+      handleGlobalMouseMove();
+    }
+  };
+
 
   // 处理鼠标滚轮事件
   const handleWheel = (e) => {
@@ -43,17 +94,30 @@ export default function Header() {
     }
   };
 
-
   // 处理悬浮延迟展开
   const handleMouseEnter = () => {
+    // 如果只有一个或没有标签页，则不执行任何操作
+    if (timers.length <= 1) {
+      return;
+    }
+    
     // 清除收起定时器（如果用户重新进入）
     if (leaveTimerRef.current) {
       clearTimeout(leaveTimerRef.current);
       leaveTimerRef.current = null;
     }
     
-    // 如果已经展开，不需要重新设置定时器
-    if (showAllTabs) return;
+    // 清除鼠标移动定时器
+    if (mouseMoveTimerRef.current) {
+      clearTimeout(mouseMoveTimerRef.current);
+      mouseMoveTimerRef.current = null;
+    }
+    
+    // 如果已经展开，启动鼠标移动检测
+    if (showAllTabs) {
+      handleGlobalMouseMove();
+      return;
+    }
     
     // 清除之前的展开定时器
     if (hoverTimerRef.current) {
@@ -63,26 +127,26 @@ export default function Header() {
     // 设置延迟展开
     hoverTimerRef.current = setTimeout(() => {
       setShowAllTabs(true);
+      // 展开后启动鼠标移动检测
+      handleGlobalMouseMove();
     }, 500); // 500ms延迟
   };
 
   // 处理鼠标离开
   const handleMouseLeave = () => {
+    // 如果只有一个或没有标签页，则不执行任何操作
+    if (timers.length <= 1) {
+      return;
+    }
+    
     // 清除展开定时器
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
     }
     
-    // 清除之前的收起定时器
-    if (leaveTimerRef.current) {
-      clearTimeout(leaveTimerRef.current);
-    }
-    
-    // 设置延迟收起
-    leaveTimerRef.current = setTimeout(() => {
-      setShowAllTabs(false);
-    }, 200); // 200ms延迟收起
+    // 不再在鼠标离开时自动收起标签栏
+    // 只有在全局鼠标移动停止5秒后才会收起
   };
 
 
@@ -95,8 +159,24 @@ export default function Header() {
       if (leaveTimerRef.current) {
         clearTimeout(leaveTimerRef.current);
       }
+      if (mouseMoveTimerRef.current) {
+        clearTimeout(mouseMoveTimerRef.current);
+      }
     };
   }, []);
+
+  // 添加全局鼠标移动监听器
+  useEffect(() => {
+    // 只有在标签数量大于1时才添加鼠标移动事件监听器
+    if (timers.length > 1) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+    }
+    
+    // 清理函数
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+    };
+  }, [showAllTabs, timers.length]); // 依赖showAllTabs状态和计时器数量
 
   // 当标签栏状态变化或选中标签变化时调整滚动位置
   useEffect(() => {
@@ -455,7 +535,7 @@ export default function Header() {
                       }}
                       className="px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap text-white shadow-md transition-all duration-300 ease-out hover:shadow-lg"
                       style={{ backgroundColor: timer.color || '#0ea5e9' }}
-                      onClick={() => {}}
+                      onClick={handleActiveTabClick}
                       data-umami-event="切换计时器"
                     >
                       {timer.name}
