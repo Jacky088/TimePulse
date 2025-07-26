@@ -550,15 +550,20 @@ export default function Header() {
             </button>
           </div>
 
-          {/* 移动端只显示登录和菜单按钮 */}
+          {/* 移动端只显示创建计时器和菜单按钮 */}
           <div className="flex items-center md:hidden">
-            {/* 移动端登录按钮 */}
+            {/* 移动端创建计时器按钮 */}
             <button
               className="p-2 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
-              onClick={openLoginModal}
-              data-umami-event={t('header.login')}
+              onClick={() => {
+                setIsTimerTypeModalOpen(true);
+                if (window.location.hash !== '#add') {
+                  window.location.hash = 'add';
+                }
+              }}
+              data-umami-event={t('timer.create')}
             >
-              <FiUser className="text-xl" />
+              <FiPlus className="text-xl" />
             </button>
 
             {/* 移动端菜单按钮 */}
@@ -639,20 +644,17 @@ export default function Header() {
                   <span className="text-xs ml-2 flex-1 text-right">{t('header.settings')}</span>
                 </button>
                 
-                {/* 添加"添加计时器"按钮 */}
+                {/* 添加"登录"按钮 */}
                 <button
                   className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-200/60 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
                   onClick={() => {
-                    setIsTimerTypeModalOpen(true);
+                    openLoginModal();
                     setIsMenuOpen(false);
-                    if (window.location.hash !== '#add') {
-                      window.location.hash = 'add';
-                    }
                   }}
-                  data-umami-event={t('timer.create')}
+                  data-umami-event={t('header.login')}
                 >
-                  <FiPlus className="text-xl" />
-                  <span className="text-xs ml-2 flex-1 text-right">{t('timer.create')}</span>
+                  <FiUser className="text-xl" />
+                  <span className="text-xs ml-2 flex-1 text-right">{t('header.login')}</span>
                 </button>
                 
                 {/* 添加"分享"按钮 */}
