@@ -6,20 +6,43 @@
  * @returns {string} 编码后的分享字符串
  */
 export function createShareUrl(timers) {
-  // 只保留必要的字段以减小URL长度
-  const minimalTimers = timers.map(timer => ({
-    id: timer.id,
-    name: timer.name,
-    targetDate: timer.targetDate,
-    timezone: timer.timezone,
-    color: timer.color,
-  }));
+  // 只保留必要的字段以减小URL长度，根据计时器类型包含不同字段
+  const minimalTimers = timers.map(timer => {
+    const baseTimer = {
+      id: timer.id,
+      name: timer.name,
+      type: timer.type,
+      color: timer.color,
+    };
+    
+    // 根据计时器类型添加特定字段
+    if (timer.type === 'stopwatch') {
+      baseTimer.startTime = timer.startTime;
+      baseTimer.isRunning = timer.isRunning;
+    } else if (timer.type === 'worldclock') {
+      baseTimer.timezone = timer.timezone;
+      baseTimer.city = timer.city;
+      baseTimer.country = timer.country;
+    } else {
+      // 默认倒计时
+      baseTimer.targetDate = timer.targetDate;
+    }
+    
+    return baseTimer;
+  });
   
   // 将数据转换为JSON字符串
   const data = JSON.stringify({ timers: minimalTimers });
   
   // 使用 encodeURIComponent 处理非 Latin1 字符，然后再使用 Base64 编码
-  return btoa(encodeURIComponent(data));
+  const encodedData = btoa(encodeURIComponent(data));
+  
+  // 检查编码后的数据长度，如果过长则警告用户
+  if (encodedData.length > 2000) {
+    console.warn('分享数据过长，可能导致二维码生成失败或URL过长问题');
+  }
+  
+  return encodedData;
 }
 
 /**

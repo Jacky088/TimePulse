@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe, FiPlus } from 'react-icons/fi';
+import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe, FiPlus, FiShare2 } from 'react-icons/fi';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoginModal from '../UI/LoginModal';
+import ShareModal from '../UI/ShareModal';
 import TimerTypeModal from '../UI/TimerTypeModal';
 import AddTimerModal from '../UI/AddTimerModal';
 import AddStopwatchModal from '../UI/AddStopwatchModal';
@@ -18,6 +19,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [editingTimer, setEditingTimer] = useState(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -483,6 +485,20 @@ export default function Header() {
               <FiPlus className="text-xl" />
             </button>
             
+            {/* 分享按钮 */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={() => {
+                setIsShareOpen(true);
+                if (window.location.hash !== '#share') {
+                  window.location.hash = 'share';
+                }
+              }}
+              data-umami-event={t('timer.share')}
+            >
+              <FiShare2 className="text-xl" />
+            </button>
+            
             {/* 全屏按钮 */}
             <button
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
@@ -625,7 +641,7 @@ export default function Header() {
                 
                 {/* 添加"添加计时器"按钮 */}
                 <button
-                  className="flex items-center justify-between p-3 rounded-lg col-span-2 bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-200/60 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-200/60 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
                   onClick={() => {
                     setIsTimerTypeModalOpen(true);
                     setIsMenuOpen(false);
@@ -637,6 +653,22 @@ export default function Header() {
                 >
                   <FiPlus className="text-xl" />
                   <span className="text-xs ml-2 flex-1 text-right">{t('timer.create')}</span>
+                </button>
+                
+                {/* 添加"分享"按钮 */}
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-200/60 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setIsShareOpen(true);
+                    setIsMenuOpen(false);
+                    if (window.location.hash !== '#share') {
+                      window.location.hash = 'share';
+                    }
+                  }}
+                  data-umami-event={t('timer.share')}
+                >
+                  <FiShare2 className="text-xl" />
+                  <span className="text-xs ml-2 flex-1 text-right">{t('timer.share')}</span>
                 </button>
               </div>
             </div>
@@ -942,6 +974,18 @@ export default function Header() {
       <AnimatePresence>
         {isWorldClockModalOpen && (
           <AddWorldClockModal onClose={closeAllModals} />
+        )}
+      </AnimatePresence>
+
+      {/* 分享模态框 */}
+      <AnimatePresence>
+        {isShareOpen && (
+          <ShareModal onClose={() => {
+            setIsShareOpen(false);
+            if (window.location.hash === '#share') {
+              window.location.hash = '';
+            }
+          }} />
         )}
       </AnimatePresence>
     </header>

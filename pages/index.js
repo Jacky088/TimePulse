@@ -9,12 +9,10 @@ import AddTimerModal from '../components/UI/AddTimerModal';
 import AddStopwatchModal from '../components/UI/AddStopwatchModal';
 import AddWorldClockModal from '../components/UI/AddWorldClockModal';
 import TimerTypeModal from '../components/UI/TimerTypeModal';
-import ShareModal from '../components/UI/ShareModal';
 import LoginModal from '../components/UI/LoginModal';
 import { useTimers } from '../context/TimerContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from '../hooks/useTranslation';
-import { FaShareAlt } from 'react-icons/fa';
 import { parseShareUrl } from '../utils/shareUtils';
 
 export default function Home() {
@@ -24,7 +22,6 @@ export default function Home() {
   const router = useRouter();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTimerTypeModalOpen, setIsTimerTypeModalOpen] = useState(false);
   const [isCountdownModalOpen, setIsCountdownModalOpen] = useState(false);
@@ -130,34 +127,6 @@ export default function Home() {
         </main>
       </Layout>
       
-      {/* 将按钮移到Layout组件外部，确保它们总是在最上层 */}
-      {/* 分享按钮 - 保持使用动态主题色，在Footer显示时隐藏 */}
-      <motion.div 
-        className="fixed bottom-6 left-6" 
-        style={{ zIndex: 50 }}
-        animate={{ 
-          opacity: isFooterVisible ? 0 : 1,
-          scale: isFooterVisible ? 0.8 : 1,
-          pointerEvents: isFooterVisible ? 'none' : 'auto'
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="p-4 rounded-full glass-card shadow-lg cursor-pointer"
-          style={{ color: accentColor }}
-          onClick={() => {
-            setIsShareModalOpen(true);
-            if (window.location.hash !== '#share') {
-              window.location.hash = 'share';
-            }
-          }}
-          data-umami-event={t('timer.share')}
-        >
-          <FaShareAlt className="text-xl" />
-        </motion.button>
-      </motion.div>
       
       {/* 弹窗内容 */}
       <AnimatePresence>
@@ -199,17 +168,6 @@ export default function Home() {
         )}
       </AnimatePresence>
       
-      {/* 分享弹窗 */}
-      <AnimatePresence>
-        {isShareModalOpen && (
-          <ShareModal onClose={() => {
-            setIsShareModalOpen(false);
-            if (window.location.hash === '#share') {
-              window.location.hash = '';
-            }
-          }} />
-        )}
-      </AnimatePresence>
       
       {/* 登录弹窗 */}
       <AnimatePresence>
