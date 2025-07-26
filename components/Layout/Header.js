@@ -28,8 +28,10 @@ export default function Header() {
   const [isWorldClockModalOpen, setIsWorldClockModalOpen] = useState(false);
   const [showAllTabs, setShowAllTabs] = useState(false);
 
-  // 添加滚动引用
+  // 添加滚动引用和悬浮延迟控制
   const tabsScrollRef = useRef(null);
+  const hoverTimerRef = useRef(null);
+  const leaveTimerRef = useRef(null);
 
   // 处理鼠标滚轮事件
   const handleWheel = (e) => {
@@ -38,6 +40,61 @@ export default function Header() {
       tabsScrollRef.current.scrollLeft += e.deltaY;
     }
   };
+
+
+  // 处理悬浮延迟展开
+  const handleMouseEnter = () => {
+    // 清除收起定时器（如果用户重新进入）
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    
+    // 如果已经展开，不需要重新设置定时器
+    if (showAllTabs) return;
+    
+    // 清除之前的展开定时器
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+    
+    // 设置延迟展开
+    hoverTimerRef.current = setTimeout(() => {
+      setShowAllTabs(true);
+    }, 500); // 500ms延迟
+  };
+
+  // 处理鼠标离开
+  const handleMouseLeave = () => {
+    // 清除展开定时器
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    
+    // 清除之前的收起定时器
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+    }
+    
+    // 设置延迟收起
+    leaveTimerRef.current = setTimeout(() => {
+      setShowAllTabs(false);
+    }, 200); // 200ms延迟收起
+  };
+
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+      }
+      if (leaveTimerRef.current) {
+        clearTimeout(leaveTimerRef.current);
+      }
+    };
+  }, []);
 
   // 当标签栏状态变化或选中标签变化时调整滚动位置
   useEffect(() => {
@@ -54,10 +111,28 @@ export default function Header() {
             const tabBounds = expandedTabElement.getBoundingClientRect();
             const containerBounds = tabsScrollRef.current.getBoundingClientRect();
             
-            // 计算标签中心相对于容器左边缘的位置
-            const tabCenter = tabBounds.left + (tabBounds.width / 2) - containerBounds.left + tabsScrollRef.current.scrollLeft;
-            const containerCenter = containerWidth / 2;
-            let scrollLeftTarget = tabCenter - containerCenter;
+            // 计算标签左边缘相对于容器的位置
+            const tabLeft = tabBounds.left - containerBounds.left + tabsScrollRef.current.scrollLeft;
+            const tabRight = tabLeft + tabBounds.width;
+            
+            // 添加一些边距确保完全可见
+            const margin = 16;
+            let scrollLeftTarget = tabsScrollRef.current.scrollLeft;
+            
+            // 如果标签左边被遮挡，或者是第一个标签，确保完全显示
+            if (tabLeft < margin) {
+              scrollLeftTarget = Math.max(0, tabLeft - margin);
+            }
+            // 如果标签右边被遮挡
+            else if (tabRight > containerWidth - margin) {
+              scrollLeftTarget = tabRight - containerWidth + margin;
+            }
+            // 否则将标签居中显示
+            else {
+              const tabCenter = tabLeft + (tabBounds.width / 2);
+              const containerCenter = containerWidth / 2;
+              scrollLeftTarget = tabCenter - containerCenter;
+            }
             
             // 确保不会滚动出边界
             const maxScrollLeft = tabsScrollRef.current.scrollWidth - containerWidth;
@@ -196,10 +271,10 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40">
-      <nav className="glass-card mx-4 mt-4 px-6 py-4 flex md:grid md:grid-cols-3 items-center justify-between">
+      <nav className="glass-card mx-4 mt-4 px-6 py-4 flex items-center justify-between relative">
         {/* Logo - 增强渐变效果，使用较深的相似色 */}
         <motion.div 
-          className="flex items-center justify-start"
+          className="flex items-center justify-start z-10"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
@@ -214,13 +289,25 @@ export default function Header() {
           </h1>
         </motion.div>
 
-        {/* 计时器选择器 - 桌面版 - 居中显示 */}
-        <div className="hidden md:flex justify-center overflow-hidden relative">
+        {/* 计时器选择器 - 桌面版 - 动态定位居中显示 */}
+        <div 
+          className={`hidden md:flex absolute top-1/2 z-0 overflow-hidden ${
+            showAllTabs 
+              ? 'w-80' 
+              : 'w-48'
+          }`}
+          style={{ 
+            left: '50%', 
+            transform: 'translate(-50%, -50%)' 
+          }}
+        >
           <div 
             ref={tabsScrollRef}
-            className="flex space-x-1 overflow-x-auto py-2 px-1 max-w-md scrollbar-hide relative"
-            onMouseEnter={() => setShowAllTabs(true)} 
-            onMouseLeave={() => setShowAllTabs(false)}
+            className={`flex items-center space-x-1 py-2 px-2 w-full scrollbar-hide relative ${
+              showAllTabs ? 'justify-start overflow-x-auto' : 'justify-center overflow-x-auto'
+            }`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             onWheel={handleWheel}
             style={{ 
               WebkitOverflowScrolling: 'touch',
@@ -228,7 +315,6 @@ export default function Header() {
               msOverflowStyle: 'none',
               overflowX: 'auto',
               cursor: showAllTabs ? 'grab' : 'default',
-              isolation: 'isolate', // 创建新的堆叠上下文
             }}
             onMouseDown={(e) => {
               if (showAllTabs && tabsScrollRef.current) {
@@ -280,25 +366,50 @@ export default function Header() {
             {/* 展开状态的所有标签容器 - 仅在展开时显示 */}
             {showAllTabs && (
               <motion.div 
-                className="flex space-x-2 py-2 w-max px-1"
+                className="flex space-x-2 py-2 px-4 min-w-max"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ 
+                  duration: 0.5,
+                  ease: [0.25, 0.46, 0.45, 0.94], // 更柔和的缓动函数
+                  exit: {
+                    duration: 0.6,
+                    ease: [0.32, 0, 0.67, 0] // 收起时使用更缓慢的缓动
+                  }
+                }}
               >
-                {timers.map(timer => (
+                {timers.map((timer, index) => (
                   <motion.button
                     key={`expanded-${timer.id}`}
                     id={`expanded-timer-tab-${timer.id}`}
                     layout
-                    initial={{ opacity: 0.8, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0.8, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ 
+                      duration: 0.4,
+                      delay: index * 0.02, // 减少错开延迟
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                      layout: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
+                      exit: {
+                        duration: 0.45,
+                        delay: (timers.length - 1 - index) * 0.03, // 反向错开延迟收起
+                        ease: [0.32, 0, 0.67, 0]
+                      }
+                    }}
+                    whileHover={{ 
+                      scale: 1.01,
+                      transition: { duration: 0.4, ease: "easeOut" }
+                    }}
+                    whileTap={{ 
+                      scale: 0.99,
+                      transition: { duration: 0.2 }
+                    }}
+                    className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ease-out ${
                       activeTimerId === timer.id 
-                        ? 'text-white' 
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        ? 'text-white shadow-lg' 
+                        : 'bg-gray-100/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 backdrop-blur-sm'
                     }`}
                     style={
                       activeTimerId === timer.id 
@@ -316,7 +427,7 @@ export default function Header() {
             
             {/* 收起状态下只显示当前激活的标签 */}
             {!showAllTabs && (
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {timers.map(timer => {
                   const isActive = activeTimerId === timer.id;
                   return isActive ? (
@@ -324,11 +435,23 @@ export default function Header() {
                       key={timer.id}
                       id={`timer-tab-${timer.id}`}
                       layout
-                      initial={{ opacity: 0.8, scale: 0.95 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0.8, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap text-white"
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ 
+                        duration: 0.35,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                        layout: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+                      }}
+                      whileHover={{ 
+                        scale: 1.005,
+                        transition: { duration: 0.5, ease: "easeOut" }
+                      }}
+                      whileTap={{ 
+                        scale: 0.995,
+                        transition: { duration: 0.2 }
+                      }}
+                      className="px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap text-white shadow-md transition-all duration-300 ease-out hover:shadow-lg"
                       style={{ backgroundColor: timer.color || '#0ea5e9' }}
                       onClick={() => {}}
                       data-umami-event="切换计时器"
@@ -343,7 +466,7 @@ export default function Header() {
         </div>
 
         {/* 右侧按钮组 */}
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end z-10">
           {/* 桌面端所有按钮 */}
           <div className="hidden md:flex items-center">
             {/* 添加计时器按钮 */}
