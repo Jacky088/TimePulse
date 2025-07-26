@@ -438,64 +438,74 @@ button, a, input, select, .glass-card, .btn {
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* 自定义滚动条样式 - Webkit浏览器 (Chrome, Safari, Edge等) */
-/* 默认隐藏滚动条 */
-::-webkit-scrollbar {
+/* 自定义滚动条样式 - 只隐藏页面主滚动条 */
+/* 隐藏html和body的滚动条（页面主滚动条） */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
   width: 0px;
-  height: 0px;
   background: transparent;
 }
 
-::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
   background: transparent;
 }
 
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-/* Firefox 滚动条样式 - 默认隐藏 */
-html {
-  scrollbar-width: none;
-  scrollbar-color: transparent transparent;
-}
-
-/* IE滚动条样式（有限支持） - 默认隐藏 */
+/* Firefox 滚动条样式 - 隐藏html和body的滚动条 */
+html,
 body {
-  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE滚动条样式 */
 }
 
-/* 滚动条交互优化 - 保持隐藏状态 */
-@media (pointer: fine) {
-  ::-webkit-scrollbar {
-    width: 0px;
-    height: 0px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: transparent;
-  }
-  
-  body:hover::-webkit-scrollbar-thumb {
-    background: transparent;
-  }
-}
-
-/* 深色模式下滚动条 - 保持隐藏 */
-.dark::-webkit-scrollbar-thumb {
+/* 深色模式下页面主滚动条 - 保持隐藏 */
+.dark html::-webkit-scrollbar-thumb,
+.dark body::-webkit-scrollbar-thumb {
   background: transparent;
 }
 
-.dark::-webkit-scrollbar-thumb:hover {
+.dark html::-webkit-scrollbar-thumb:hover,
+.dark body::-webkit-scrollbar-thumb:hover {
   background: transparent;
 }
 
-.dark {
-  scrollbar-color: transparent transparent;
+/* 为其他元素提供默认的滚动条样式 - 使用主题色 */
+*:not(body)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*:not(body)::-webkit-scrollbar-track {
+  background: rgba(var(--color-primary, 14, 165, 233), 0.1);
+  border-radius: 4px;
+}
+
+*:not(body)::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-primary, 14, 165, 233), 0.4);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+*:not(body)::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-primary, 14, 165, 233), 0.6);
+}
+
+/* 深色模式下其他元素的滚动条 - 使用深色模式主题色 */
+.dark *:not(body)::-webkit-scrollbar-track {
+  background: rgba(var(--color-primary, 56, 189, 248), 0.15);
+}
+
+.dark *:not(body)::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-primary, 56, 189, 248), 0.5);
+}
+
+.dark *:not(body)::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-primary, 56, 189, 248), 0.7);
 }
 
 /* 平滑滚动 - 添加后备方案 */
