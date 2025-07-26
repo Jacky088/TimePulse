@@ -47,6 +47,8 @@ export default function Layout({ children }) {
       
       // 调整触发距离，让footer更早开始显示
       const isNearBottom = scrollPosition + windowHeight >= documentHeight - 300;
+      // 检查是否在顶部
+      const isAtTop = scrollPosition <= 50;
       
       if (isNearBottom && !showFooter) {
         setShowFooter(true);
@@ -58,6 +60,9 @@ export default function Layout({ children }) {
         if (window.location.hash === '#footer') {
           window.location.hash = '';
         }
+      } else if (isAtTop && window.location.hash === '#footer') {
+        // 当滚动到顶部时，如果当前hash是#footer，则清除它
+        window.location.hash = '';
       }
     };
     
