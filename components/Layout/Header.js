@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe } from 'react-icons/fi';
+import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe, FiPlus, FiShare2 } from 'react-icons/fi';
 import { useTimers } from '../../context/TimerContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import LoginModal from '../UI/LoginModal';
+import ShareModal from '../UI/ShareModal';
+import TimerTypeModal from '../UI/TimerTypeModal';
+import AddTimerModal from '../UI/AddTimerModal';
+import AddStopwatchModal from '../UI/AddStopwatchModal';
+import AddWorldClockModal from '../UI/AddWorldClockModal';
 import { HexColorPicker } from 'react-colorful';
 
 export default function Header() {
@@ -14,10 +19,147 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [editingTimer, setEditingTimer] = useState(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [isTimerTypeModalOpen, setIsTimerTypeModalOpen] = useState(false);
+  const [isCountdownModalOpen, setIsCountdownModalOpen] = useState(false);
+  const [isStopwatchModalOpen, setIsStopwatchModalOpen] = useState(false);
+  const [isWorldClockModalOpen, setIsWorldClockModalOpen] = useState(false);
+  const [showAllTabs, setShowAllTabs] = useState(false);
+
+  // 添加滚动引用和悬浮延迟控制
+  const tabsScrollRef = useRef(null);
+  const hoverTimerRef = useRef(null);
+  const leaveTimerRef = useRef(null);
+
+  // 处理鼠标滚轮事件
+  const handleWheel = (e) => {
+    if (tabsScrollRef.current) {
+      e.preventDefault();
+      tabsScrollRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
+
+  // 处理悬浮延迟展开
+  const handleMouseEnter = () => {
+    // 清除收起定时器（如果用户重新进入）
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    
+    // 如果已经展开，不需要重新设置定时器
+    if (showAllTabs) return;
+    
+    // 清除之前的展开定时器
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+    
+    // 设置延迟展开
+    hoverTimerRef.current = setTimeout(() => {
+      setShowAllTabs(true);
+    }, 500); // 500ms延迟
+  };
+
+  // 处理鼠标离开
+  const handleMouseLeave = () => {
+    // 清除展开定时器
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    
+    // 清除之前的收起定时器
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+    }
+    
+    // 设置延迟收起
+    leaveTimerRef.current = setTimeout(() => {
+      setShowAllTabs(false);
+    }, 200); // 200ms延迟收起
+  };
+
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+      }
+      if (leaveTimerRef.current) {
+        clearTimeout(leaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  // 当标签栏状态变化或选中标签变化时调整滚动位置
+  useEffect(() => {
+    if (tabsScrollRef.current && activeTimerId) {
+      // 添加小延时，确保DOM已经更新
+      setTimeout(() => {
+        if (!tabsScrollRef.current) return;
+        
+        if (showAllTabs) {
+          // 在展开状态下，查找展开模式中的激活标签
+          const expandedTabElement = document.getElementById(`expanded-timer-tab-${activeTimerId}`);
+          if (expandedTabElement) {
+            const containerWidth = tabsScrollRef.current.clientWidth;
+            const tabBounds = expandedTabElement.getBoundingClientRect();
+            const containerBounds = tabsScrollRef.current.getBoundingClientRect();
+            
+            // 计算标签左边缘相对于容器的位置
+            const tabLeft = tabBounds.left - containerBounds.left + tabsScrollRef.current.scrollLeft;
+            const tabRight = tabLeft + tabBounds.width;
+            
+            // 添加一些边距确保完全可见
+            const margin = 16;
+            let scrollLeftTarget = tabsScrollRef.current.scrollLeft;
+            
+            // 如果标签左边被遮挡，或者是第一个标签，确保完全显示
+            if (tabLeft < margin) {
+              scrollLeftTarget = Math.max(0, tabLeft - margin);
+            }
+            // 如果标签右边被遮挡
+            else if (tabRight > containerWidth - margin) {
+              scrollLeftTarget = tabRight - containerWidth + margin;
+            }
+            // 否则将标签居中显示
+            else {
+              const tabCenter = tabLeft + (tabBounds.width / 2);
+              const containerCenter = containerWidth / 2;
+              scrollLeftTarget = tabCenter - containerCenter;
+            }
+            
+            // 确保不会滚动出边界
+            const maxScrollLeft = tabsScrollRef.current.scrollWidth - containerWidth;
+            scrollLeftTarget = Math.max(0, Math.min(scrollLeftTarget, maxScrollLeft));
+            
+            tabsScrollRef.current.scrollTo({
+              left: scrollLeftTarget,
+              behavior: 'smooth'
+            });
+          }
+        } else {
+          // 收起状态下，确保当前标签可见
+          const activeTabElement = document.getElementById(`timer-tab-${activeTimerId}`);
+          if (activeTabElement) {
+            // 将激活的标签滚动到可见区域
+            activeTabElement.scrollIntoView({ 
+              behavior: 'smooth',
+              block: 'nearest',
+              inline: 'center'
+            });
+          }
+        }
+      }, 50);
+    }
+  }, [showAllTabs, activeTimerId]);
 
   // 打开登录模态框
   const openLoginModal = () => {
@@ -88,6 +230,34 @@ export default function Header() {
     setShowColorPicker(false);
   };
 
+  // 处理计时器类型选择
+  const handleTimerTypeSelect = (type) => {
+    setIsTimerTypeModalOpen(false);
+    
+    switch (type) {
+      case 'countdown':
+        setIsCountdownModalOpen(true);
+        break;
+      case 'stopwatch':
+        setIsStopwatchModalOpen(true);
+        break;
+      case 'worldclock':
+        setIsWorldClockModalOpen(true);
+        break;
+    }
+  };
+
+  // 关闭所有模态框
+  const closeAllModals = () => {
+    setIsTimerTypeModalOpen(false);
+    setIsCountdownModalOpen(false);
+    setIsStopwatchModalOpen(false);
+    setIsWorldClockModalOpen(false);
+    if (window.location.hash === '#add') {
+      window.location.hash = '';
+    }
+  };
+
   // 监听全屏状态变化
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -103,10 +273,10 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40">
-      <nav className="glass-card mx-4 mt-4 px-6 py-4 flex md:grid md:grid-cols-3 items-center justify-between">
+      <nav className="glass-card mx-4 mt-4 px-6 py-4 flex items-center justify-between relative">
         {/* Logo - 增强渐变效果，使用较深的相似色 */}
         <motion.div 
-          className="flex items-center justify-start"
+          className="flex items-center justify-start z-10"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
@@ -121,44 +291,214 @@ export default function Header() {
           </h1>
         </motion.div>
 
-        {/* 计时器选择器 - 桌面版 - 居中显示 */}
-        <div className="hidden md:flex justify-center">
-          <div className="flex space-x-4 overflow-x-auto py-2 max-w-md">
-            {/* 移除 AnimatePresence 的 mode="wait" 属性，允许多个子元素同时动画 */}
-            <AnimatePresence>
-              {timers.map(timer => (
-                <motion.button
-                  key={timer.id}
-                  layout
-                  layoutId={`timer-${timer.id}`}
-                  initial={{ opacity: 0.8, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0.8, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                    activeTimerId === timer.id 
-                      ? 'text-white' 
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-                  style={
-                    activeTimerId === timer.id 
-                      ? { backgroundColor: timer.color || '#0ea5e9' } 
-                      : {}
+        {/* 计时器选择器 - 桌面版 - 动态定位居中显示 */}
+        <div 
+          className={`hidden md:flex absolute top-1/2 z-0 overflow-hidden ${
+            showAllTabs 
+              ? 'w-80' 
+              : 'w-48'
+          }`}
+          style={{ 
+            left: '50%', 
+            transform: 'translate(-50%, -50%)' 
+          }}
+        >
+          <div 
+            ref={tabsScrollRef}
+            className={`flex items-center space-x-1 py-2 px-2 w-full scrollbar-hide relative ${
+              showAllTabs ? 'justify-start overflow-x-auto' : 'justify-center overflow-x-auto'
+            }`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onWheel={handleWheel}
+            style={{ 
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              overflowX: 'auto',
+              cursor: showAllTabs ? 'grab' : 'default',
+            }}
+            onMouseDown={(e) => {
+              if (showAllTabs && tabsScrollRef.current) {
+                // 记录起始点击位置
+                const startX = e.pageX - tabsScrollRef.current.offsetLeft;
+                const scrollLeft = tabsScrollRef.current.scrollLeft;
+                
+                const handleMouseMove = (e) => {
+                  if (!tabsScrollRef.current) return;
+                  // 计算滚动距离
+                  const x = e.pageX - tabsScrollRef.current.offsetLeft;
+                  const walk = (x - startX) * 2; // 加快滚动速度
+                  tabsScrollRef.current.scrollLeft = scrollLeft - walk;
+                };
+                
+                const handleMouseUp = () => {
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+              }
+            }}
+            onTouchStart={(e) => {
+              if (tabsScrollRef.current) {
+                const startX = e.touches[0].clientX;
+                const scrollLeft = tabsScrollRef.current.scrollLeft;
+                
+                const handleTouchMove = (e) => {
+                  if (!tabsScrollRef.current) return;
+                  // 阻止页面滚动
+                  e.preventDefault();
+                  const x = e.touches[0].clientX;
+                  const walk = (startX - x); // 滚动距离
+                  tabsScrollRef.current.scrollLeft = scrollLeft + walk;
+                };
+                
+                const handleTouchEnd = () => {
+                  tabsScrollRef.current.removeEventListener('touchmove', handleTouchMove);
+                  tabsScrollRef.current.removeEventListener('touchend', handleTouchEnd);
+                };
+                
+                tabsScrollRef.current.addEventListener('touchmove', handleTouchMove, { passive: false });
+                tabsScrollRef.current.addEventListener('touchend', handleTouchEnd);
+              }
+            }}
+          >
+            {/* 展开状态的所有标签容器 - 仅在展开时显示 */}
+            {showAllTabs && (
+              <motion.div 
+                className="flex space-x-2 py-2 px-4 min-w-max"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ 
+                  duration: 0.5,
+                  ease: [0.25, 0.46, 0.45, 0.94], // 更柔和的缓动函数
+                  exit: {
+                    duration: 0.6,
+                    ease: [0.32, 0, 0.67, 0] // 收起时使用更缓慢的缓动
                   }
-                  onClick={() => setActiveTimerId(timer.id)}
-                  data-umami-event="切换计时器"
-                >
-                  {timer.name}
-                </motion.button>
-              ))}
-            </AnimatePresence>
+                }}
+              >
+                {timers.map((timer, index) => (
+                  <motion.button
+                    key={`expanded-${timer.id}`}
+                    id={`expanded-timer-tab-${timer.id}`}
+                    layout
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ 
+                      duration: 0.4,
+                      delay: index * 0.02, // 减少错开延迟
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                      layout: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
+                      exit: {
+                        duration: 0.45,
+                        delay: (timers.length - 1 - index) * 0.03, // 反向错开延迟收起
+                        ease: [0.32, 0, 0.67, 0]
+                      }
+                    }}
+                    whileHover={{ 
+                      scale: 1.01,
+                      transition: { duration: 0.4, ease: "easeOut" }
+                    }}
+                    whileTap={{ 
+                      scale: 0.99,
+                      transition: { duration: 0.2 }
+                    }}
+                    className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ease-out ${
+                      activeTimerId === timer.id 
+                        ? 'text-white shadow-lg' 
+                        : 'bg-gray-100/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 backdrop-blur-sm'
+                    }`}
+                    style={
+                      activeTimerId === timer.id 
+                        ? { backgroundColor: timer.color || '#0ea5e9' } 
+                        : {}
+                    }
+                    onClick={() => setActiveTimerId(timer.id)}
+                    data-umami-event="切换计时器"
+                  >
+                    {timer.name}
+                  </motion.button>
+                ))}
+              </motion.div>
+            )}
+            
+            {/* 收起状态下只显示当前激活的标签 */}
+            {!showAllTabs && (
+              <AnimatePresence mode="wait">
+                {timers.map(timer => {
+                  const isActive = activeTimerId === timer.id;
+                  return isActive ? (
+                    <motion.button
+                      key={timer.id}
+                      id={`timer-tab-${timer.id}`}
+                      layout
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ 
+                        duration: 0.35,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                        layout: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+                      }}
+                      whileHover={{ 
+                        scale: 1.005,
+                        transition: { duration: 0.5, ease: "easeOut" }
+                      }}
+                      whileTap={{ 
+                        scale: 0.995,
+                        transition: { duration: 0.2 }
+                      }}
+                      className="px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap text-white shadow-md transition-all duration-300 ease-out hover:shadow-lg"
+                      style={{ backgroundColor: timer.color || '#0ea5e9' }}
+                      onClick={() => {}}
+                      data-umami-event="切换计时器"
+                    >
+                      {timer.name}
+                    </motion.button>
+                  ) : null;
+                })}
+              </AnimatePresence>
+            )}
           </div>
         </div>
 
         {/* 右侧按钮组 */}
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end z-10">
           {/* 桌面端所有按钮 */}
           <div className="hidden md:flex items-center">
+            {/* 添加计时器按钮 */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={() => {
+                setIsTimerTypeModalOpen(true);
+                if (window.location.hash !== '#add') {
+                  window.location.hash = 'add';
+                }
+              }}
+              data-umami-event={t('timer.create')}
+            >
+              <FiPlus className="text-xl" />
+            </button>
+            
+            {/* 分享按钮 */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              onClick={() => {
+                setIsShareOpen(true);
+                if (window.location.hash !== '#share') {
+                  window.location.hash = 'share';
+                }
+              }}
+              data-umami-event={t('timer.share')}
+            >
+              <FiShare2 className="text-xl" />
+            </button>
+            
             {/* 全屏按钮 */}
             <button
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
@@ -297,6 +637,38 @@ export default function Header() {
                 >
                   <FiSettings className="text-xl" />
                   <span className="text-xs ml-2 flex-1 text-right">{t('header.settings')}</span>
+                </button>
+                
+                {/* 添加"添加计时器"按钮 */}
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-200/60 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setIsTimerTypeModalOpen(true);
+                    setIsMenuOpen(false);
+                    if (window.location.hash !== '#add') {
+                      window.location.hash = 'add';
+                    }
+                  }}
+                  data-umami-event={t('timer.create')}
+                >
+                  <FiPlus className="text-xl" />
+                  <span className="text-xs ml-2 flex-1 text-right">{t('timer.create')}</span>
+                </button>
+                
+                {/* 添加"分享"按钮 */}
+                <button
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/10 dark:bg-black/10 backdrop-blur-sm border border-gray-200/60 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setIsShareOpen(true);
+                    setIsMenuOpen(false);
+                    if (window.location.hash !== '#share') {
+                      window.location.hash = 'share';
+                    }
+                  }}
+                  data-umami-event={t('timer.share')}
+                >
+                  <FiShare2 className="text-xl" />
+                  <span className="text-xs ml-2 flex-1 text-right">{t('timer.share')}</span>
                 </button>
               </div>
             </div>
@@ -568,6 +940,49 @@ export default function Header() {
           <LoginModal onClose={() => {
             setIsLoginOpen(false);
             if (window.location.hash === '#login') {
+              window.location.hash = '';
+            }
+          }} />
+        )}
+      </AnimatePresence>
+
+      {/* 计时器类型选择模态框 */}
+      <AnimatePresence>
+        {isTimerTypeModalOpen && (
+          <TimerTypeModal 
+            onClose={closeAllModals}
+            onSelectType={handleTimerTypeSelect}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 添加倒计时模态框 */}
+      <AnimatePresence>
+        {isCountdownModalOpen && (
+          <AddTimerModal onClose={closeAllModals} />
+        )}
+      </AnimatePresence>
+
+      {/* 添加正计时模态框 */}
+      <AnimatePresence>
+        {isStopwatchModalOpen && (
+          <AddStopwatchModal onClose={closeAllModals} />
+        )}
+      </AnimatePresence>
+
+      {/* 添加世界时钟模态框 */}
+      <AnimatePresence>
+        {isWorldClockModalOpen && (
+          <AddWorldClockModal onClose={closeAllModals} />
+        )}
+      </AnimatePresence>
+
+      {/* 分享模态框 */}
+      <AnimatePresence>
+        {isShareOpen && (
+          <ShareModal onClose={() => {
+            setIsShareOpen(false);
+            if (window.location.hash === '#share') {
               window.location.hash = '';
             }
           }} />

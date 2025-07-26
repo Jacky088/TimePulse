@@ -16,18 +16,25 @@ export default function ShareModal({ onClose }) {
   const [copied, setCopied] = useState(false);
   const [selectedTimer, setSelectedTimer] = useState(activeTimerId);
   const [shareAll, setShareAll] = useState(false);
+  const [qrError, setQrError] = useState(false);
   
   // 生成分享URL
   useEffect(() => {
-    const url = createShareUrl(
-      shareAll 
-        ? timers 
-        : timers.filter(timer => timer.id === selectedTimer)
-    );
-    
-    // 构建完整URL
-    const fullUrl = `${window.location.origin}${window.location.pathname}?share=${url}`;
-    setShareUrl(fullUrl);
+    try {
+      const url = createShareUrl(
+        shareAll 
+          ? timers 
+          : timers.filter(timer => timer.id === selectedTimer)
+      );
+      
+      // 构建完整URL
+      const fullUrl = `${window.location.origin}${window.location.pathname}?share=${url}`;
+      setShareUrl(fullUrl);
+      setQrError(false);
+    } catch (error) {
+      console.error('生成分享URL失败:', error);
+      setQrError(true);
+    }
   }, [timers, selectedTimer, shareAll]);
   
   // 复制URL到剪贴板
@@ -135,20 +142,27 @@ export default function ShareModal({ onClose }) {
         
         <div className="mb-6 flex justify-center">
           <div className="p-4 bg-white rounded-xl">
-            <QRCodeSVG
-              value={shareUrl}
-              size={200}
-              level="H"
-              includeMargin={true}
-              imageSettings={{
-                src: "/favicon.ico",
-                x: undefined,
-                y: undefined,
-                height: 24,
-                width: 24,
-                excavate: true,
-              }}
-            />
+            {qrError || shareUrl.length > 2048 ? (
+              <div className="w-[200px] h-[200px] flex flex-col items-center justify-center text-center text-gray-500">
+                <p className="text-sm mb-2">{t('share.qrError', '数据过长，无法生成二维码')}</p>
+                <p className="text-xs">{t('share.qrErrorHint', '请尝试分享单个计时器')}</p>
+              </div>
+            ) : (
+              <QRCodeSVG
+                value={shareUrl}
+                size={200}
+                level="M"
+                includeMargin={true}
+                imageSettings={{
+                  src: "/favicon.ico",
+                  x: undefined,
+                  y: undefined,
+                  height: 24,
+                  width: 24,
+                  excavate: true,
+                }}
+              />
+            )}
           </div>
         </div>
         

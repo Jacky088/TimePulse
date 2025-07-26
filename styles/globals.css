@@ -389,11 +389,23 @@ button, a, input, select, .glass-card, .btn {
 
 /* 隐藏横向滚动条的工具类 */
 .hide-horizontal-scrollbar {
-  overflow-x: hidden;
+  overflow-x: auto;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
 }
 
 .hide-horizontal-scrollbar::-webkit-scrollbar:horizontal {
   display: none;
+}
+
+/* 用于完全隐藏滚动条的类 */
+.scrollbar-hide {
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* 自定义滚动条样式 - Webkit浏览器 (Chrome, Safari, Edge等) */
