@@ -53,13 +53,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Exit if Release Already Exists
+      - name: Skip if Release Already Exists
         if: steps.check_release.outputs.release_exists == 'true'
         run: |
-          echo "Release already exists. Skipping..."
-          exit 0
+          echo "⚠️ Release ${{ steps.get_version.outputs.version }} already exists. Skipping release creation..."
+          echo "All subsequent steps will be skipped."
 
       - name: Get Previous Tag
+        if: steps.check_release.outputs.release_exists == 'false'
         id: prev_tag
         run: |
           # 获取所有v开头的标签，按版本排序，排除当前版本
@@ -70,6 +71,7 @@ jobs:
           echo "previous_tag=$tag" >> $GITHUB_OUTPUT
 
       - name: Generate Release Notes
+        if: steps.check_release.outputs.release_exists == 'false'
         id: release_notes
         run: |
           if [ "${{ steps.prev_tag.outputs.previous_tag }}" != "none" ]; then
@@ -89,12 +91,14 @@ jobs:
           echo "Release notes generated successfully"
 
       - name: Create ZIP Archive
+        if: steps.check_release.outputs.release_exists == 'false'
         run: |
           cd out
           zip -r ../site-${{ steps.get_version.outputs.version }}.zip ./*
           cd ..
 
       - name: Create GitHub Release
+        if: steps.check_release.outputs.release_exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_version.outputs.version }}
