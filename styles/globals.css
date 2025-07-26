@@ -439,70 +439,63 @@ button, a, input, select, .glass-card, .btn {
 }
 
 /* 自定义滚动条样式 - Webkit浏览器 (Chrome, Safari, Edge等) */
+/* 默认隐藏滚动条 */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 10px;
-  margin: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-primary, 14, 165, 233), 0.3);
-  border-radius: 10px;
-  -webkit-transition: background 0.3s ease;
-  transition: background 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-primary, 14, 165, 233), 0.5);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* Firefox 滚动条样式 */
+/* Firefox 滚动条样式 - 默认隐藏 */
 html {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(var(--color-primary, 14, 165, 233), 0.3) transparent;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
 }
 
-/* IE滚动条样式（有限支持） */
+/* IE滚动条样式（有限支持） - 默认隐藏 */
 body {
-  -ms-overflow-style: -ms-autohiding-scrollbar;
+  -ms-overflow-style: none;
 }
 
-/* 滚动条交互优化 */
+/* 滚动条交互优化 - 保持隐藏状态 */
 @media (pointer: fine) {
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 0px;
+    height: 0px;
   }
   
   ::-webkit-scrollbar-thumb {
-    background: rgba(var(--color-primary, 14, 165, 233), 0.2);
+    background: transparent;
   }
   
   body:hover::-webkit-scrollbar-thumb {
-    background: rgba(var(--color-primary, 14, 165, 233), 0.3);
+    background: transparent;
   }
 }
 
-/* 深色模式下滚动条反色处理 */
+/* 深色模式下滚动条 - 保持隐藏 */
 .dark::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-primary, 56, 189, 248), 0.4);
+  background: transparent;
 }
 
 .dark::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-primary, 56, 189, 248), 0.6);
+  background: transparent;
 }
 
 .dark {
-  scrollbar-color: rgba(var(--color-primary, 56, 189, 248), 0.4) transparent;
+  scrollbar-color: transparent transparent;
 }
 
 /* 平滑滚动 - 添加后备方案 */
