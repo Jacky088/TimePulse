@@ -396,6 +396,7 @@ export default function Header() {
               scrollbarWidth: 'none', 
               msOverflowStyle: 'none',
               overflowX: 'auto',
+              margin: '0 auto',
               cursor: showAllTabs ? 'grab' : 'default',
             }}
             onMouseDown={(e) => {
@@ -448,7 +449,7 @@ export default function Header() {
             {/* 展开状态的所有标签容器 - 仅在展开时显示 */}
             {showAllTabs && (
               <motion.div 
-                className="flex space-x-2 py-2 px-4 min-w-max"
+                className="flex space-x-2 py-2 px-4 min-w-max justify-center w-full"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
