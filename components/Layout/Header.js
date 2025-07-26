@@ -473,7 +473,7 @@ export default function Header() {
           <div className="hidden md:flex items-center">
             {/* 添加计时器按钮 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={() => {
                 setIsTimerTypeModalOpen(true);
                 if (window.location.hash !== '#add') {
@@ -487,7 +487,7 @@ export default function Header() {
             
             {/* 分享按钮 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={() => {
                 setIsShareOpen(true);
                 if (window.location.hash !== '#share') {
@@ -501,7 +501,7 @@ export default function Header() {
             
             {/* 全屏按钮 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={toggleFullscreen}
               data-umami-event={isFullscreen ? t('header.exitFullscreen') : t('header.fullscreen')}
             >
@@ -510,7 +510,7 @@ export default function Header() {
             
             {/* 登录按钮 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={openLoginModal}
               data-umami-event={t('header.login')}
             >
@@ -519,7 +519,7 @@ export default function Header() {
             
             {/* 主题切换 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={toggleTheme}
               data-umami-event={t('header.themeToggle')}
             >
@@ -528,7 +528,7 @@ export default function Header() {
 
             {/* 语言切换 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={() => setIsLanguageOpen(true)}
               data-umami-event={t('header.languageSelect')}
             >
@@ -537,7 +537,7 @@ export default function Header() {
 
             {/* 设置按钮 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={() => {
                 setIsManageOpen(true);
                 if (window.location.hash !== '#manage') {
@@ -554,7 +554,7 @@ export default function Header() {
           <div className="flex items-center md:hidden">
             {/* 移动端登录按钮 */}
             <button
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={openLoginModal}
               data-umami-event={t('header.login')}
             >
@@ -563,7 +563,7 @@ export default function Header() {
 
             {/* 移动端菜单按钮 */}
             <button
-              className="p-2 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="p-2 ml-1 rounded-full btn-glass-hover text-gray-700 dark:text-gray-300 cursor-pointer"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               data-umami-event={t('header.menu')}
             >
@@ -737,7 +737,7 @@ export default function Header() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">{t('header.manage')}</h2>
                 <button
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                  className="p-1 rounded-full btn-glass-hover cursor-pointer"
                   onClick={() => {
                     setIsManageOpen(false);
                     setEditingTimer(null);
@@ -893,7 +893,7 @@ export default function Header() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">{t('header.selectLanguage')}</h2>
                 <button
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                  className="p-1 rounded-full btn-glass-hover cursor-pointer"
                   onClick={() => setIsLanguageOpen(false)}
                 >
                   <FiX className="text-xl" />

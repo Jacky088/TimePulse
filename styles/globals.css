@@ -188,6 +188,21 @@ button, a, input, select, .glass-card, .btn {
     cursor: not-allowed;
   }
   
+  /* 玻璃态悬停效果 - 主题色半透明背景 */
+  .btn-glass-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-glass-hover:hover {
+    background: rgba(var(--color-primary), 0.1);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  
+  .dark .btn-glass-hover:hover {
+    background: rgba(var(--color-primary), 0.3);
+  }
+  
   .digit-column {
     @apply relative overflow-hidden text-center;
     transform: translateZ(0);
@@ -319,7 +334,22 @@ button, a, input, select, .glass-card, .btn {
   will-change: transform;
 }
 
-.digit {
+  /* 玻璃态主题色悬停效果样式 */
+  .hover-glass-theme {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-glass-theme:hover {
+    background: rgba(var(--color-primary), 0.15) !important;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-color: rgba(var(--color-primary), 0.25) !important;
+  }
+  
+  .dark .hover-glass-theme:hover {
+    background: rgba(var(--color-primary), 0.2) !important;
+    border-color: rgba(var(--color-primary), 0.3) !important;
+  }.digit {
   position: absolute;
   top: 0;
   left: 0;
