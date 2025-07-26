@@ -23,7 +23,6 @@ function MyApp({ Component, pageProps }) {
     // 监听hash变化以支持umami统计
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      console.log(`页面状态变更: #${hash || 'home'} - ${new Date().toLocaleString()}`);
     };
     
     // 检查URL中是否包含syncId参数

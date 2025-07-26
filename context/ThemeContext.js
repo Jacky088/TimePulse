@@ -51,8 +51,6 @@ export function ThemeProvider({ children }) {
     setAccentColor(color);
     localStorage.setItem('accent-color', color);
     updateCssVariables(color);
-    
-    console.log(`主题色已更新为: ${color} - ${new Date().toLocaleString()}`);
   };
   
   // 更新CSS变量

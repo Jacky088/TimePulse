@@ -31,7 +31,7 @@ if ('serviceWorker' in navigator) {
           // 这里可以显示缓存更新的通知或提示
           window.dispatchEvent(new CustomEvent('cacheUpdated', { detail: event.data }));
         } else if (event.data && event.data.action === 'cacheUpdatedWithChanges') {
-          console.log('缓存已更新，发现新内容：', new Date(event.data.timestamp).toLocaleString());
+          console.log(`${new Date().toLocaleTimeString()} | [PWA] 缓存已更新，发现新内容`);
           // 派发带有更新信息的事件
           window.dispatchEvent(new CustomEvent('cacheUpdatedWithChanges', { detail: event.data }));
         } else if (event.data && event.data.action === 'cacheChecked') {

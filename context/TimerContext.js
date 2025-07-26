@@ -202,6 +202,9 @@ export function TimerProvider({ children }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [holidaysList, setHolidaysList] = useState([]);
 
+  // 输出完整的启动时间
+  console.log(`TimePulse 应用启动 - ${new Date().toLocaleString()}`);
+
   // 初始化节假日列表
   useEffect(() => {
     setHolidaysList(getHolidaysList());
@@ -209,12 +212,19 @@ export function TimerProvider({ children }) {
 
   // 从localStorage加载计时器
   useEffect(() => {
+    console.log(`${new Date().toLocaleTimeString()} | [初始化] 开始加载计时器数据`);
+    
     const loadedTimers = JSON.parse(localStorage.getItem('timers') || '[]');
     const savedActiveTimerId = localStorage.getItem('activeTimerId');
     
+    console.log(`${new Date().toLocaleTimeString()} | [本地存储] 找到 ${loadedTimers.length} 个本地计时器`);
+    console.log(`${new Date().toLocaleTimeString()} | [本地存储] 上次活动计时器ID: ${savedActiveTimerId || '未设置'}`);
+    
     // 如果没有计时器，添加默认计时器
     if (loadedTimers.length === 0) {
+      console.log(`${new Date().toLocaleTimeString()} | [初始化] 没有本地计时器，创建默认计时器`);
       const defaultTimer = getDefaultTimer();
+      console.log(`${new Date().toLocaleTimeString()} | [初始化] 默认计时器: ${defaultTimer.name} (${defaultTimer.id})`);
       setTimers([defaultTimer]);
       setActiveTimerId(defaultTimer.id);
     } else {
@@ -223,14 +233,17 @@ export function TimerProvider({ children }) {
       // 如果有保存的活动计时器ID，且该计时器存在，则使用它
       if (savedActiveTimerId && loadedTimers.some(timer => timer.id === savedActiveTimerId)) {
         setActiveTimerId(savedActiveTimerId);
+        const activeTimer = loadedTimers.find(timer => timer.id === savedActiveTimerId);
+        console.log(`${new Date().toLocaleTimeString()} | [初始化] 恢复活动计时器: ${activeTimer.name} (${savedActiveTimerId})`);
       } else {
         // 否则使用第一个计时器
         setActiveTimerId(loadedTimers[0].id);
+        console.log(`${new Date().toLocaleTimeString()} | [初始化] 上次活动计时器无效，使用第一个计时器: ${loadedTimers[0].name} (${loadedTimers[0].id})`);
       }
     }
     
     setIsLoaded(true);
-    console.log(`已加载${loadedTimers.length || 1}个计时器 - ${new Date().toLocaleString()}`);
+    console.log(`${new Date().toLocaleTimeString()} | [初始化] 本地数据加载完成，共${loadedTimers.length || 1}个计时器`);
     
     // 检查是否需要从远程同步数据
     const syncData = async () => {
@@ -238,32 +251,47 @@ export function TimerProvider({ children }) {
       const syncPass = localStorage.getItem('timepulse_sync_password');
       
       if (syncId && syncPass) {
+        console.log(`${new Date().toLocaleTimeString()} | [云端同步] 检测到同步配置，开始从远程加载数据`);
+        console.log(`${new Date().toLocaleTimeString()} | [云端同步] 同步ID: ${syncId.substring(0, 8)}...`);
+        
         try {
           setIsSyncing(true);
+          console.log(`${new Date().toLocaleTimeString()} | [云端同步] 正在从远程服务器获取数据...`);
           const remoteData = await getFromRemoteCache(syncId, syncPass);
           
           if (remoteData && remoteData.timers && remoteData.timers.length > 0) {
+            console.log(`${new Date().toLocaleTimeString()} | [云端同步] 远程数据获取成功，包含 ${remoteData.timers.length} 个计时器`);
+            console.log(`${new Date().toLocaleTimeString()} | [云端同步] 远程活动计时器ID: ${remoteData.activeTimerId || '未设置'}`);
+            
             // 使用远程数据更新计时器
             setTimers(remoteData.timers);
             
             // 如果远程数据有保存的activeTimerId且该计时器存在，则使用它
             if (remoteData.activeTimerId && remoteData.timers.some(timer => timer.id === remoteData.activeTimerId)) {
               setActiveTimerId(remoteData.activeTimerId);
+              console.log(`${new Date().toLocaleTimeString()} | [云端同步] 已恢复远程活动计时器: ${remoteData.activeTimerId}`);
             } else {
               setActiveTimerId(remoteData.timers[0].id);
+              console.log(`${new Date().toLocaleTimeString()} | [云端同步] 远程活动计时器无效，使用第一个计时器: ${remoteData.timers[0].id}`);
             }
             
             localStorage.setItem('timers', JSON.stringify(remoteData.timers));
             if (remoteData.activeTimerId) {
               localStorage.setItem('activeTimerId', remoteData.activeTimerId);
             }
-            console.log(`已从远程同步 ${remoteData.timers.length} 个计时器 - ${new Date().toLocaleString()}`);
+            console.log(`${new Date().toLocaleTimeString()} | [云端同步] 已成功从远程同步 ${remoteData.timers.length} 个计时器到本地`);
+          } else {
+            console.log(`${new Date().toLocaleTimeString()} | [云端同步] 远程数据为空或无效，继续使用本地数据`);
           }
         } catch (error) {
-          console.error('从远程同步数据失败:', error);
+          console.error(`${new Date().toLocaleTimeString()} | [云端同步] 从远程同步数据失败:`, error);
+          console.error(`${new Date().toLocaleTimeString()} | [云端同步] 错误详情: ${error.message || '未知错误'}`);
         } finally {
           setIsSyncing(false);
+          console.log(`${new Date().toLocaleTimeString()} | [云端同步] 远程同步操作完成`);
         }
+      } else {
+        console.log(`${new Date().toLocaleTimeString()} | [云端同步] 未配置同步信息，跳过远程同步`);
       }
     };
     
@@ -274,29 +302,50 @@ export function TimerProvider({ children }) {
   useEffect(() => {
     if (isLoaded && activeTimerId) {
       localStorage.setItem('activeTimerId', activeTimerId);
-      console.log(`已保存活动计时器ID: ${activeTimerId} - ${new Date().toLocaleString()}`);
+      console.log(`${new Date().toLocaleTimeString()} | [本地存储] 已保存活动计时器ID: ${activeTimerId}`);
+      
+      // 查找对应的计时器名称用于日志
+      const activeTimer = timers.find(timer => timer.id === activeTimerId);
+      if (activeTimer) {
+        console.log(`${new Date().toLocaleTimeString()} | [本地存储] 活动计时器名称: ${activeTimer.name}`);
+      }
     }
-  }, [activeTimerId, isLoaded]);
+  }, [activeTimerId, isLoaded, timers]);
 
   // 保存到localStorage
   useEffect(() => {
     if (isLoaded && timers.length > 0) {
       localStorage.setItem('timers', JSON.stringify(timers));
-      console.log(`已保存${timers.length}个计时器到本地 - ${new Date().toLocaleString()}`);
+      console.log(`${new Date().toLocaleTimeString()} | [本地存储] 已保存${timers.length}个计时器到本地`);
       
       // 如果有同步ID和密码，也保存到远程
       const syncId = localStorage.getItem('timepulse_sync_id');
       const syncPass = localStorage.getItem('timepulse_sync_password');
       
       if (syncId && syncPass && !isSyncing) {
+        console.log(`${new Date().toLocaleTimeString()} | [云端同步] 检测到数据变化，准备同步到云端`);
+        console.log(`${new Date().toLocaleTimeString()} | [云端同步] 同步内容: ${timers.length} 个计时器，活动计时器ID: ${activeTimerId || '未设置'}`);
+        
         // 防抖：只在用户停止操作500ms后再同步到云端
         const syncToRemote = setTimeout(() => {
+          console.log(`${new Date().toLocaleTimeString()} | [云端同步] 开始上传数据到云端...`);
+          
           saveToRemoteCache(syncId, syncPass, { timers, activeTimerId }, 30 * 24 * 60 * 60 * 1000)
-            .then(() => console.log(`已自动同步${timers.length}个计时器到云端 - ${new Date().toLocaleString()}`))
-            .catch(err => console.error('自动同步到云端失败:', err));
+            .then(() => {
+              console.log(`${new Date().toLocaleTimeString()} | [云端同步] ✅ 成功同步${timers.length}个计时器到云端`);
+              console.log(`${new Date().toLocaleTimeString()} | [云端同步] 已保存活动计时器: ${activeTimerId || '未设置'}`);
+            })
+            .catch(err => {
+              console.error(`${new Date().toLocaleTimeString()} | [云端同步] ❌ 自动同步到云端失败:`, err);
+              console.error(`${new Date().toLocaleTimeString()} | [云端同步] 错误详情: ${err.message || '未知错误'}`);
+            });
         }, 500);
         
         return () => clearTimeout(syncToRemote);
+      } else if (syncId && syncPass && isSyncing) {
+        console.log(`${new Date().toLocaleTimeString()} | [云端同步] 正在同步中，跳过本次上传`);
+      } else {
+        console.log(`${new Date().toLocaleTimeString()} | [云端同步] 未配置同步信息，跳过云端同步`);
       }
     }
   }, [timers, activeTimerId, isLoaded, isSyncing]);
@@ -324,7 +373,7 @@ export function TimerProvider({ children }) {
           setActiveTimerId(newDefaultTimer.id);
         }
         
-        console.log(`默认计时器 ${defaultTimer.name} 已过期，已替换为 ${newDefaultTimer.name} - ${new Date().toLocaleString()}`);
+        console.log(`${new Date().toLocaleTimeString()} | [计时器管理] 默认计时器 ${defaultTimer.name} 已过期，已替换为 ${newDefaultTimer.name}`);
       }
     }
   };
@@ -366,7 +415,7 @@ export function TimerProvider({ children }) {
     });
     
     setActiveTimerId(newTimer.id);
-    console.log(`已添加计时器: ${newTimer.name} (${newTimer.type || 'countdown'}) - ${new Date().toLocaleString()}`);
+    console.log(`${new Date().toLocaleTimeString()} | [计时器管理] 已添加计时器: ${newTimer.name} (${newTimer.type || 'countdown'})`);
     
     // 只为倒计时类型设置通知（异步处理，不阻塞UI）
     if (newTimer.type === 'countdown' || !newTimer.type) {
@@ -404,7 +453,7 @@ export function TimerProvider({ children }) {
       return newTimers;
     });
     
-    console.log(`已删除计时器ID: ${id} - ${new Date().toLocaleString()}`);
+    console.log(`${new Date().toLocaleTimeString()} | [计时器管理] 已删除计时器ID: ${id}`);
   };
 
   // 更新计时器
@@ -431,7 +480,7 @@ export function TimerProvider({ children }) {
       return newTimers;
     });
     
-    console.log(`已更新计时器ID: ${id} - ${new Date().toLocaleString()}`);
+    console.log(`${new Date().toLocaleTimeString()} | [计时器管理] 已更新计时器ID: ${id}`);
   };
 
   // 获取活动计时器

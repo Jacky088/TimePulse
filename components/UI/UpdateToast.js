@@ -13,7 +13,7 @@ export default function UpdateToast() {
       // 检查是否真的有更新
       if (event.detail.hasUpdates) {
         setShowToast(true);
-        console.log('检测到应用更新，建议刷新页面');
+        console.log(`${new Date().toLocaleTimeString()} | [PWA] 检测到应用更新，建议刷新页面`);
       }
     };
 
