@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiMenu, FiX, FiSettings, FiMoon, FiSun, FiUser, FiMaximize, FiMinimize, FiEdit, FiSave, FiGlobe, FiPlus } from 'react-icons/fi';
 import { useTimers } from '../../context/TimerContext';
@@ -27,6 +27,62 @@ export default function Header() {
   const [isStopwatchModalOpen, setIsStopwatchModalOpen] = useState(false);
   const [isWorldClockModalOpen, setIsWorldClockModalOpen] = useState(false);
   const [showAllTabs, setShowAllTabs] = useState(false);
+
+  // 添加滚动引用
+  const tabsScrollRef = useRef(null);
+
+  // 处理鼠标滚轮事件
+  const handleWheel = (e) => {
+    if (tabsScrollRef.current) {
+      e.preventDefault();
+      tabsScrollRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
+  // 当标签栏状态变化或选中标签变化时调整滚动位置
+  useEffect(() => {
+    if (tabsScrollRef.current && activeTimerId) {
+      // 添加小延时，确保DOM已经更新
+      setTimeout(() => {
+        if (!tabsScrollRef.current) return;
+        
+        if (showAllTabs) {
+          // 在展开状态下，查找展开模式中的激活标签
+          const expandedTabElement = document.getElementById(`expanded-timer-tab-${activeTimerId}`);
+          if (expandedTabElement) {
+            const containerWidth = tabsScrollRef.current.clientWidth;
+            const tabBounds = expandedTabElement.getBoundingClientRect();
+            const containerBounds = tabsScrollRef.current.getBoundingClientRect();
+            
+            // 计算标签中心相对于容器左边缘的位置
+            const tabCenter = tabBounds.left + (tabBounds.width / 2) - containerBounds.left + tabsScrollRef.current.scrollLeft;
+            const containerCenter = containerWidth / 2;
+            let scrollLeftTarget = tabCenter - containerCenter;
+            
+            // 确保不会滚动出边界
+            const maxScrollLeft = tabsScrollRef.current.scrollWidth - containerWidth;
+            scrollLeftTarget = Math.max(0, Math.min(scrollLeftTarget, maxScrollLeft));
+            
+            tabsScrollRef.current.scrollTo({
+              left: scrollLeftTarget,
+              behavior: 'smooth'
+            });
+          }
+        } else {
+          // 收起状态下，确保当前标签可见
+          const activeTabElement = document.getElementById(`timer-tab-${activeTimerId}`);
+          if (activeTabElement) {
+            // 将激活的标签滚动到可见区域
+            activeTabElement.scrollIntoView({ 
+              behavior: 'smooth',
+              block: 'nearest',
+              inline: 'center'
+            });
+          }
+        }
+      }, 50);
+    }
+  }, [showAllTabs, activeTimerId]);
 
   // 打开登录模态框
   const openLoginModal = () => {
@@ -159,45 +215,93 @@ export default function Header() {
         </motion.div>
 
         {/* 计时器选择器 - 桌面版 - 居中显示 */}
-        <div className="hidden md:flex justify-center">
+        <div className="hidden md:flex justify-center overflow-hidden relative">
           <div 
-            className="flex space-x-1 overflow-x-auto py-2 max-w-md scrollbar-hide"
+            ref={tabsScrollRef}
+            className="flex space-x-1 overflow-x-auto py-2 px-1 max-w-md scrollbar-hide relative"
             onMouseEnter={() => setShowAllTabs(true)} 
             onMouseLeave={() => setShowAllTabs(false)}
-          >
-            {/* 移除 AnimatePresence 的 mode="wait" 属性，允许多个子元素同时动画 */}
-            <AnimatePresence>
-              {timers.map(timer => {
-                const isActive = activeTimerId === timer.id;
-                const shouldDisplay = showAllTabs || isActive;
+            onWheel={handleWheel}
+            style={{ 
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              overflowX: 'auto',
+              cursor: showAllTabs ? 'grab' : 'default',
+              isolation: 'isolate', // 创建新的堆叠上下文
+            }}
+            onMouseDown={(e) => {
+              if (showAllTabs && tabsScrollRef.current) {
+                // 记录起始点击位置
+                const startX = e.pageX - tabsScrollRef.current.offsetLeft;
+                const scrollLeft = tabsScrollRef.current.scrollLeft;
                 
-                return (
+                const handleMouseMove = (e) => {
+                  if (!tabsScrollRef.current) return;
+                  // 计算滚动距离
+                  const x = e.pageX - tabsScrollRef.current.offsetLeft;
+                  const walk = (x - startX) * 2; // 加快滚动速度
+                  tabsScrollRef.current.scrollLeft = scrollLeft - walk;
+                };
+                
+                const handleMouseUp = () => {
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+              }
+            }}
+            onTouchStart={(e) => {
+              if (tabsScrollRef.current) {
+                const startX = e.touches[0].clientX;
+                const scrollLeft = tabsScrollRef.current.scrollLeft;
+                
+                const handleTouchMove = (e) => {
+                  if (!tabsScrollRef.current) return;
+                  // 阻止页面滚动
+                  e.preventDefault();
+                  const x = e.touches[0].clientX;
+                  const walk = (startX - x); // 滚动距离
+                  tabsScrollRef.current.scrollLeft = scrollLeft + walk;
+                };
+                
+                const handleTouchEnd = () => {
+                  tabsScrollRef.current.removeEventListener('touchmove', handleTouchMove);
+                  tabsScrollRef.current.removeEventListener('touchend', handleTouchEnd);
+                };
+                
+                tabsScrollRef.current.addEventListener('touchmove', handleTouchMove, { passive: false });
+                tabsScrollRef.current.addEventListener('touchend', handleTouchEnd);
+              }
+            }}
+          >
+            {/* 展开状态的所有标签容器 - 仅在展开时显示 */}
+            {showAllTabs && (
+              <motion.div 
+                className="flex space-x-2 py-2 w-max px-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {timers.map(timer => (
                   <motion.button
-                    key={timer.id}
+                    key={`expanded-${timer.id}`}
+                    id={`expanded-timer-tab-${timer.id}`}
                     layout
-                    layoutId={`timer-${timer.id}`}
-                    initial={{ opacity: 0.8, scale: 0.95, maxWidth: isActive ? '200px' : '0px' }}
-                    animate={{ 
-                      opacity: shouldDisplay ? 1 : 0, 
-                      scale: shouldDisplay ? 1 : 0.95,
-                      maxWidth: shouldDisplay ? '200px' : isActive ? '200px' : '0px',
-                      margin: shouldDisplay ? '0 0.25rem' : '0',
-                      padding: shouldDisplay ? '0.25rem 0.75rem' : '0.25rem 0',
-                      pointerEvents: shouldDisplay ? 'auto' : 'none'
-                    }}
+                    initial={{ opacity: 0.8, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0.8, scale: 0.95 }}
-                    transition={{ 
-                      duration: 0.3, 
-                      ease: "easeInOut",
-                      layout: { type: "spring", stiffness: 300, damping: 30 }
-                    }}
-                    className={`rounded-full text-sm font-medium whitespace-nowrap transition-all transform-gpu ${
-                      isActive 
+                    transition={{ duration: 0.2 }}
+                    className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
+                      activeTimerId === timer.id 
                         ? 'text-white' 
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                     }`}
                     style={
-                      isActive 
+                      activeTimerId === timer.id 
                         ? { backgroundColor: timer.color || '#0ea5e9' } 
                         : {}
                     }
@@ -206,9 +310,35 @@ export default function Header() {
                   >
                     {timer.name}
                   </motion.button>
-                );
-              })}
-            </AnimatePresence>
+                ))}
+              </motion.div>
+            )}
+            
+            {/* 收起状态下只显示当前激活的标签 */}
+            {!showAllTabs && (
+              <AnimatePresence>
+                {timers.map(timer => {
+                  const isActive = activeTimerId === timer.id;
+                  return isActive ? (
+                    <motion.button
+                      key={timer.id}
+                      id={`timer-tab-${timer.id}`}
+                      layout
+                      initial={{ opacity: 0.8, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0.8, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap text-white"
+                      style={{ backgroundColor: timer.color || '#0ea5e9' }}
+                      onClick={() => {}}
+                      data-umami-event="切换计时器"
+                    >
+                      {timer.name}
+                    </motion.button>
+                  ) : null;
+                })}
+              </AnimatePresence>
+            )}
           </div>
         </div>
 
