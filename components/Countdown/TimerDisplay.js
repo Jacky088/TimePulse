@@ -409,57 +409,70 @@ export default function TimerDisplay() {
       
       {/* 时间显示 */}
       <motion.div 
-        className="flex items-center justify-center space-x-2 sm:space-x-4"
+        className={`flex items-center justify-center ${showYears ? 'flex-col sm:flex-row gap-2 sm:gap-0' : 'flex-row'} space-x-0 sm:space-x-4`}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        {/* 年数 - 仅在需要时显示 */}
+        {/* 第一行：年数和天数 - 仅在需要时显示 */}
         {showYears && (
-          <>
+          <div className="flex items-center justify-center space-x-2 sm:space-x-4">
             <DigitColumn 
               value={formatNumber(timeValue.years)} 
               label={t('time.years')}
               color={activeTimer.color || '#0ea5e9'}
             />
             <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
-          </>
+            {showDays && (
+              <>
+                <DigitColumn 
+                  value={formatNumber(timeValue.days)} 
+                  label={t('time.days')}
+                  color={activeTimer.color || '#0ea5e9'}
+                />
+                <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400 hidden sm:inline">:</span>
+              </>
+            )}
+          </div>
         )}
         
-        {/* 天数 - 仅在需要时显示 */}
-        {showDays && (
-          <>
-            <DigitColumn 
-              value={formatNumber(timeValue.days)} 
-              label={t('time.days')}
-              color={activeTimer.color || '#0ea5e9'}
-            />
-            <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
-          </>
-        )}
-        
-        {/* 小时 */}
-        <DigitColumn 
-          value={formatNumber(timeValue.hours)} 
-          label={t('time.hours')}
-          color={activeTimer.color || '#0ea5e9'}
-        />
-        <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
-        
-        {/* 分钟 */}
-        <DigitColumn 
-          value={formatNumber(timeValue.minutes)} 
-          label={t('time.minutes')}
-          color={activeTimer.color || '#0ea5e9'}
-        />
-        <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
-        
-        {/* 秒 */}
-        <DigitColumn 
-          value={formatNumber(timeValue.seconds)} 
-          label={t('time.seconds')}
-          color={activeTimer.color || '#0ea5e9'}
-        />
+        {/* 第二行：天数（当没有年数时）、小时、分钟、秒 */}
+        <div className="flex items-center justify-center space-x-2 sm:space-x-4">
+          {/* 天数 - 仅在没有年数且需要时显示 */}
+          {!showYears && showDays && (
+            <>
+              <DigitColumn 
+                value={formatNumber(timeValue.days)} 
+                label={t('time.days')}
+                color={activeTimer.color || '#0ea5e9'}
+              />
+              <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
+            </>
+          )}
+          
+          {/* 小时 */}
+          <DigitColumn 
+            value={formatNumber(timeValue.hours)} 
+            label={t('time.hours')}
+            color={activeTimer.color || '#0ea5e9'}
+          />
+          <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
+          
+          {/* 分钟 */}
+          <DigitColumn 
+            value={formatNumber(timeValue.minutes)} 
+            label={t('time.minutes')}
+            color={activeTimer.color || '#0ea5e9'}
+          />
+          <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
+          
+          {/* 秒 */}
+          <DigitColumn 
+            value={formatNumber(timeValue.seconds)} 
+            label={t('time.seconds')}
+            color={activeTimer.color || '#0ea5e9'}
+          />
+        </div>
       </motion.div>
       
       {/* 正计时控制按钮 */}
