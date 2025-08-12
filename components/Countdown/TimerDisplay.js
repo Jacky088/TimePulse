@@ -9,13 +9,14 @@ import { FiPlay, FiPause, FiSquare } from 'react-icons/fi';
 export default function TimerDisplay() {
   const { getActiveTimer, updateTimer, checkAndUpdateDefaultTimer } = useTimers();
   const { t } = useTranslation();
-  const [timeValue, setTimeValue] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeValue, setTimeValue] = useState({ years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [showDays, setShowDays] = useState(true);
+  const [showYears, setShowYears] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   
   // 使用 ref 跟踪最后计算的时间，避免不必要的重渲染
-  const lastTimeRef = useRef({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const lastTimeRef = useRef({ years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
   const timerIdRef = useRef(null);
   const syncTimerRef = useRef(null); // 高频同步定时器
   const startTimeRef = useRef(null);
@@ -24,7 +25,8 @@ export default function TimerDisplay() {
   
   // 判断两个时间对象是否相等
   const areTimesEqual = (time1, time2) => {
-    return time1.days === time2.days && 
+    return time1.years === time2.years &&
+           time1.days === time2.days && 
            time1.hours === time2.hours && 
            time1.minutes === time2.minutes && 
            time1.seconds === time2.seconds;
@@ -107,7 +109,8 @@ export default function TimerDisplay() {
   
   // 判断是否只有秒数变化（避免分钟数字不必要的重新渲染）
   const isOnlySecondsChanged = (time1, time2) => {
-    return time1.days === time2.days && 
+    return time1.years === time2.years &&
+           time1.days === time2.days && 
            time1.hours === time2.hours && 
            time1.minutes === time2.minutes && 
            time1.seconds !== time2.seconds;
@@ -123,8 +126,8 @@ export default function TimerDisplay() {
       // 倒计时结束
       if (!isFinished) {
         setIsFinished(true);
-        setTimeValue({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        lastTimeRef.current = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+        setTimeValue({ years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
+        lastTimeRef.current = { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
         
         // 检查并更新过期的默认计时器
         if (checkAndUpdateDefaultTimer) {
@@ -154,18 +157,21 @@ export default function TimerDisplay() {
     }
     
     // 计算天、时、分、秒
-    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const totalDays = Math.floor(difference / (1000 * 60 * 60 * 24));
+    const years = Math.floor(totalDays / 365);
+    const days = totalDays % 365;
     const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
     const minutes = Math.floor((difference / 1000 / 60) % 60);
     const seconds = Math.floor((difference / 1000) % 60);
     
-    const newTimeLeft = { days, hours, minutes, seconds };
+    const newTimeLeft = { years, days, hours, minutes, seconds };
     
     // 只有当时间真正变化时才更新状态
     if (!areTimesEqual(newTimeLeft, lastTimeRef.current)) {
       setTimeValue(newTimeLeft);
       lastTimeRef.current = newTimeLeft;
-      setShowDays(days > 0);
+      setShowYears(years > 0);
+      setShowDays(days > 0 || years > 0); // 当有年份或天数大于0时显示天数
     }
   };
   
@@ -190,12 +196,14 @@ export default function TimerDisplay() {
     elapsedMs = Math.max(0, elapsedMs); // 确保不为负数
     
     const totalSeconds = Math.floor(elapsedMs / 1000);
-    const days = Math.floor(totalSeconds / (24 * 60 * 60));
+    const totalDays = Math.floor(totalSeconds / (24 * 60 * 60));
+    const years = Math.floor(totalDays / 365);
+    const days = totalDays % 365;
     const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
     const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
     const seconds = totalSeconds % 60;
     
-    const newTimeValue = { days, hours, minutes, seconds };
+    const newTimeValue = { years, days, hours, minutes, seconds };
     
     // 智能更新：只有当时间确实变化时才更新状态
     // 对于正计时，我们特别处理避免不必要的重新渲染
@@ -209,7 +217,8 @@ export default function TimerDisplay() {
         setTimeValue(newTimeValue);
       }
       lastTimeRef.current = newTimeValue;
-      setShowDays(days > 0);
+      setShowYears(years > 0);
+      setShowDays(days > 0 || years > 0); // 当有年份或天数大于0时显示天数
     }
   };
   
@@ -223,6 +232,7 @@ export default function TimerDisplay() {
     const seconds = timeInTimezone.getSeconds();
     
     const newTimeValue = { 
+      years: 0,
       days: 0, 
       hours: hours, 
       minutes: minutes, 
@@ -232,6 +242,7 @@ export default function TimerDisplay() {
     if (!areTimesEqual(newTimeValue, lastTimeRef.current)) {
       setTimeValue(newTimeValue);
       lastTimeRef.current = newTimeValue;
+      setShowYears(false); // 世界时钟不显示年数
       setShowDays(false); // 世界时钟不显示天数
     }
   };
@@ -330,8 +341,8 @@ export default function TimerDisplay() {
           totalPausedTime: 0
         });
         setIsRunning(false);
-        setTimeValue({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        lastTimeRef.current = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+        setTimeValue({ years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
+        lastTimeRef.current = { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
         break;
     }
   };
@@ -403,6 +414,18 @@ export default function TimerDisplay() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
+        {/* 年数 - 仅在需要时显示 */}
+        {showYears && (
+          <>
+            <DigitColumn 
+              value={formatNumber(timeValue.years)} 
+              label={t('time.years')}
+              color={activeTimer.color || '#0ea5e9'}
+            />
+            <span className="text-4xl sm:text-5xl md:text-6xl font-thin text-gray-400">:</span>
+          </>
+        )}
+        
         {/* 天数 - 仅在需要时显示 */}
         {showDays && (
           <>

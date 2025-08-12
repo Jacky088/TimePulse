@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout/Layout';
 import GradientBackground from '../components/Background/GradientBackground';
-import CountdownDisplay from '../components/Countdown/CountdownDisplay';
 import TimerDisplay from '../components/Countdown/TimerDisplay';
 import AddTimerModal from '../components/UI/AddTimerModal';
 import AddStopwatchModal from '../components/UI/AddStopwatchModal';

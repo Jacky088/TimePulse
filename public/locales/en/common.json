@@ -62,9 +62,10 @@
     "successfullyCreated": "Successfully Created"
   },
   "time": {
+    "years": "Years",
     "days": "Days",
     "hours": "Hours",
-    "minutes": "Minutes", 
+    "minutes": "Minutes",
     "seconds": "Seconds",
     "day": "Day",
     "hour": "Hour",
