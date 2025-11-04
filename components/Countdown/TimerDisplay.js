@@ -4,7 +4,7 @@ import { useTimers } from '../../context/TimerContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import DigitColumn from './DigitColumn';
 import { addNotification } from '../../utils/notificationManager';
-import { FiPlay, FiPause, FiSquare } from 'react-icons/fi';
+import { FiPlay, FiPause, FiSquare, FiFlag } from 'react-icons/fi';
 
 export default function TimerDisplay() {
   const { getActiveTimer, updateTimer, checkAndUpdateDefaultTimer } = useTimers();
@@ -338,11 +338,27 @@ export default function TimerDisplay() {
           isRunning: false,
           startTime: now.toISOString(),
           pausedAt: null,
-          totalPausedTime: 0
+          totalPausedTime: 0,
+          laps: [] // 清空分段记录
         });
         setIsRunning(false);
         setTimeValue({ years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
         lastTimeRef.current = { years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+        break;
+        
+      case 'lap':
+        // 记录分段时间
+        const startTime = new Date(timer.startTime);
+        const elapsedMs = now - startTime - (timer.totalPausedTime || 0);
+        const laps = timer.laps || [];
+        const newLap = {
+          id: Date.now(),
+          timestamp: now.toISOString(),
+          elapsedMs: elapsedMs
+        };
+        updateTimer(timer.id, {
+          laps: [...laps, newLap]
+        });
         break;
     }
   };
@@ -350,6 +366,19 @@ export default function TimerDisplay() {
   // 格式化为两位数
   const formatNumber = (num) => {
     return num.toString().padStart(2, '0');
+  };
+  
+  // 格式化毫秒为时分秒显示
+  const formatTimeFromMs = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (hours > 0) {
+      return `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
+    }
+    return `${formatNumber(minutes)}:${formatNumber(seconds)}`;
   };
   
   const activeTimer = getActiveTimer();
@@ -501,6 +530,20 @@ export default function TimerDisplay() {
             {isRunning ? <FiPause className="text-xl pointer-events-none" /> : <FiPlay className="text-xl pointer-events-none" />}
           </button>
           <button
+            onClick={() => handleStopwatchControl('lap')}
+            disabled={!isRunning}
+            className="glass-card p-4 rounded-full hover:bg-white/10 dark:hover:bg-black/10 transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ 
+              color: activeTimer.color,
+              zIndex: 41,
+              position: 'relative',
+              pointerEvents: 'auto',
+              userSelect: 'none'
+            }}
+          >
+            <FiFlag className="text-xl pointer-events-none" />
+          </button>
+          <button
             onClick={() => handleStopwatchControl('stop')}
             className="glass-card p-4 rounded-full hover:bg-white/10 dark:hover:bg-black/10 transition-colors cursor-pointer select-none"
             style={{ 
@@ -541,6 +584,57 @@ export default function TimerDisplay() {
       >
         {getTimerDescription()}
       </motion.p>
+      
+      {/* 分段计时列表 */}
+      {activeTimer.type === 'stopwatch' && activeTimer.laps && activeTimer.laps.length > 0 && (
+        <motion.div
+          className="mt-8 w-full max-w-md glass-card p-4 rounded-xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold" style={{ color: activeTimer.color }}>
+              {t('lap.title')}
+            </h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {activeTimer.laps.length} {t('lap.lapTime')}
+            </span>
+          </div>
+          
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {activeTimer.laps.slice().reverse().map((lap, index) => {
+              const lapNumber = activeTimer.laps.length - index;
+              const prevLap = lapNumber > 1 ? activeTimer.laps[lapNumber - 2] : null;
+              const intervalMs = prevLap ? lap.elapsedMs - prevLap.elapsedMs : lap.elapsedMs;
+              
+              return (
+                <motion.div
+                  key={lap.id}
+                  className="flex justify-between items-center p-3 rounded-lg bg-white/5 dark:bg-black/5"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <span className="font-medium" style={{ color: activeTimer.color }}>
+                    {t('lap.lap', { number: lapNumber })}
+                  </span>
+                  <div className="flex space-x-4 text-sm">
+                    <div className="text-right">
+                      <div className="text-gray-400 text-xs">{t('lap.lapInterval')}</div>
+                      <div className="font-mono">{formatTimeFromMs(intervalMs)}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-gray-400 text-xs">{t('lap.totalTime')}</div>
+                      <div className="font-mono">{formatTimeFromMs(lap.elapsedMs)}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
