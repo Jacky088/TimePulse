@@ -1,5 +1,7 @@
-const CACHE_VERSION = 'v1';
+// 使用时间戳作为缓存版本，确保每次部署都会更新
+const CACHE_VERSION = 'v1.2'; // 手动更新此版本号以强制清除所有缓存
 const CACHE_NAME = `timepulse-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `timepulse-runtime-${CACHE_VERSION}`;
 
 // 修改缓存资源列表，只包含确定存在的文件
 const urlsToCache = [
@@ -10,23 +12,24 @@ const urlsToCache = [
 
 // 安装Service Worker
 self.addEventListener('install', event => {
+  console.log(`[SW] 安装新版本: ${CACHE_VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('缓存已打开');
+        console.log('[SW] 缓存已打开');
         
         // 使用Promise.allSettled代替cache.addAll，这样即使某些资源请求失败，也不会导致整个缓存过程失败
         return Promise.allSettled(
           urlsToCache.map(url => 
-            fetch(url)
+            fetch(url, { cache: 'no-cache' }) // 强制从网络获取最新版本
               .then(response => {
                 if (!response || !response.ok) {
-                  console.log(`无法缓存资源: ${url}`);
+                  console.log(`[SW] 无法缓存资源: ${url}`);
                   return;
                 }
                 return cache.put(url, response);
               })
-              .catch(err => console.log(`缓存资源失败: ${url}, 错误: ${err}`))
+              .catch(err => console.log(`[SW] 缓存资源失败: ${url}, 错误: ${err}`))
           )
         );
       })
@@ -38,14 +41,18 @@ self.addEventListener('install', event => {
 
 // 激活Service Worker
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+  console.log(`[SW] 激活新版本: ${CACHE_VERSION}`);
+  const cacheWhitelist = [CACHE_NAME, RUNTIME_CACHE];
   event.waitUntil(
     Promise.all([
       // 清理旧缓存
       caches.keys().then(cacheNames => {
+        console.log('[SW] 检查缓存，当前版本:', CACHE_VERSION);
+        console.log('[SW] 现有缓存:', cacheNames);
         return Promise.all(
           cacheNames.map(cacheName => {
             if (cacheWhitelist.indexOf(cacheName) === -1) {
+              console.log('[SW] 删除旧缓存:', cacheName);
               return caches.delete(cacheName);
             }
           })
@@ -57,77 +64,135 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 处理fetch请求
+// 处理fetch请求 - 使用网络优先(Network First)策略
 self.addEventListener('fetch', event => {
-  // 添加错误处理以防网络请求失败
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // 如果缓存中找到了请求的资源，则返回
-        if (response) {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // 对于同源请求，使用网络优先策略，强制绕过浏览器缓存
+  if (url.origin === location.origin) {
+    event.respondWith(
+      fetch(request, { cache: 'no-cache' }) // 强制绕过浏览器缓存
+        .then(response => {
+          // 检查响应是否有效
+          if (!response || response.status !== 200) {
+            console.log(`[SW] 网络请求失败，尝试使用缓存: ${request.url}`);
+            // 如果网络请求失败，尝试从缓存获取
+            return caches.match(request).then(cachedResponse => {
+              return cachedResponse || response;
+            });
+          }
+          
+          // 克隆响应以便缓存
+          const responseToCache = response.clone();
+          
+          // 将资源缓存到运行时缓存中
+          caches.open(RUNTIME_CACHE)
+            .then(cache => {
+              cache.put(request, responseToCache);
+            })
+            .catch(err => console.log(`[SW] 缓存请求失败: ${request.url}`, err));
+            
           return response;
-        }
-        
-        // 尝试从网络获取资源
-        return fetch(event.request)
-          .then(response => {
-            // 检查响应是否有效
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            
-            // 克隆响应以便我们可以同时将其存入缓存并返回
-            const responseToCache = response.clone();
-            
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              })
-              .catch(err => console.log(`缓存请求失败: ${event.request.url}, 错误: ${err}`));
+        })
+        .catch(error => {
+          console.log('[SW] 网络请求失败，尝试使用缓存:', request.url, error);
+          
+          // 网络请求失败，尝试从缓存获取
+          return caches.match(request)
+            .then(cachedResponse => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
               
-            return response;
-          })
-          .catch(error => {
-            console.log('Fetch失败:', error);
-            
-            // 检查是否为API请求
-            const url = new URL(event.request.url);
-            if (url.pathname.includes('/api/')) {
-              // 如果是API请求，返回离线状态的JSON响应
-              return new Response(
-                JSON.stringify({ 
-                  offline: true, 
-                  message: '您当前处于离线模式，此操作需要网络连接'
-                }),
-                { 
-                  status: 503,
-                  headers: { 'Content-Type': 'application/json' }
-                }
-              );
-            }
-            
-            // 如果是HTML请求，尝试返回缓存中的离线页面或默认响应
-            return caches.match('/offline.html')
-              .then(offlineResponse => {
-                return offlineResponse || new Response(
-                  '网络错误，您当前处于离线模式',
+              // 检查是否为API请求
+              if (url.pathname.includes('/api/')) {
+                return new Response(
+                  JSON.stringify({ 
+                    offline: true, 
+                    message: '您当前处于离线模式，此操作需要网络连接'
+                  }),
                   { 
-                    status: 503, 
-                    statusText: 'Service Unavailable',
-                    headers: { 'Content-Type': 'text/html' }
+                    status: 503,
+                    headers: { 'Content-Type': 'application/json' }
                   }
                 );
-              });
-          });
-      })
-      .catch(error => {
-        console.log('缓存匹配失败:', error);
-        return new Response('网络错误，无法加载资源', { 
-          status: 503, 
-          statusText: 'Service Unavailable' 
-        });
-      })
-  );
+              }
+              
+              // 尝试返回离线页面
+              return caches.match('/offline.html')
+                .then(offlineResponse => {
+                  return offlineResponse || new Response(
+                    '网络错误，您当前处于离线模式',
+                    { 
+                      status: 503, 
+                      statusText: 'Service Unavailable',
+                      headers: { 'Content-Type': 'text/html' }
+                    }
+                  );
+                });
+            });
+        })
+    );
+  } else {
+    // 对于跨域请求（如CDN），也使用网络优先策略
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // 检查响应是否有效
+          if (!response || response.status !== 200) {
+            console.log(`[SW] 跨域请求失败，尝试使用缓存: ${request.url}`);
+            return caches.match(request).then(cached => cached || response);
+          }
+          
+          // 克隆响应以便缓存
+          const responseToCache = response.clone();
+          
+          caches.open(RUNTIME_CACHE)
+            .then(cache => {
+              cache.put(request, responseToCache);
+            })
+            .catch(err => console.log(`[SW] 缓存跨域请求失败: ${request.url}`, err));
+            
+          return response;
+        })
+        .catch(error => {
+          console.log('[SW] 跨域请求失败，尝试使用缓存:', request.url);
+          
+          // 网络请求失败，尝试从缓存获取
+          return caches.match(request)
+            .then(cachedResponse => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              
+              // 检查是否为API请求
+              if (url.pathname.includes('/api/')) {
+                return new Response(
+                  JSON.stringify({ 
+                    offline: true, 
+                    message: '您当前处于离线模式，此操作需要网络连接'
+                  }),
+                  { 
+                    status: 503,
+                    headers: { 'Content-Type': 'application/json' }
+                  }
+                );
+              }
+              
+              // 返回错误响应
+              return new Response(
+                '网络错误，无法加载资源',
+                { 
+                  status: 503, 
+                  statusText: 'Service Unavailable',
+                  headers: { 'Content-Type': 'text/plain' }
+                }
+              );
+            });
+        })
+    );
+  }
 });
 
 // 处理消息 - 接收倒计时信息并设置通知
@@ -137,24 +202,24 @@ self.addEventListener('message', event => {
   if (data.action === 'scheduleNotification') {
     const { title, timestamp, body, id } = data;
     
-    console.log('收到通知调度请求:', { title, timestamp, id });
+    console.log('[SW] 收到通知调度请求:', { title, timestamp, id });
     
     // 计算倒计时剩余时间
     const timeUntilNotification = timestamp - Date.now();
     
-    console.log('距离通知时间还有:', timeUntilNotification, 'ms');
+    console.log('[SW] 距离通知时间还有:', timeUntilNotification, 'ms');
     
     if (timeUntilNotification <= 0) {
       // 如果时间已过，立即发送通知
-      console.log('立即发送通知:', title);
+      console.log('[SW] 立即发送通知:', title);
       showNotification(title, body, id);
     } else {
       // 设置定时器，到时间时发送通知
-      console.log('设置定时器，将在', timeUntilNotification, 'ms后发送通知');
+      console.log('[SW] 设置定时器，将在', timeUntilNotification, 'ms后发送通知');
       
       // 为了提高可靠性，我们同时使用多种方式来确保通知能够发送
       const timerId = setTimeout(() => {
-        console.log('定时器触发，发送通知:', title);
+        console.log('[SW] 定时器触发，发送通知:', title);
         showNotification(title, body, id);
       }, timeUntilNotification);
       
@@ -167,96 +232,44 @@ self.addEventListener('message', event => {
   } else if (data.action === 'cancelNotification') {
     // 处理取消通知请求
     const { id } = data;
-    console.log('收到取消通知请求:', id);
+    console.log('[SW] 收到取消通知请求:', id);
     
     if (self.activeTimers && self.activeTimers.has(id)) {
       const timerId = self.activeTimers.get(id);
       clearTimeout(timerId);
       self.activeTimers.delete(id);
-      console.log('已取消通知定时器:', id);
+      console.log('[SW] 已取消通知定时器:', id);
     }
     
     // 同时取消已显示的通知
     self.registration.getNotifications({ tag: id }).then(notifications => {
       notifications.forEach(notification => {
         notification.close();
-        console.log('已关闭通知:', id);
+        console.log('[SW] 已关闭通知:', id);
       });
     });
   } else if (data.action === 'updateCache') {
-    // 处理缓存更新请求
+    // 处理缓存更新请求 - 清除所有运行时缓存
+    console.log('[SW] 收到更新缓存请求，清除运行时缓存');
     event.waitUntil(
-      caches.open(CACHE_NAME)
-        .then(cache => {
-          console.log('正在更新缓存...');
-          
-          // 重新获取核心资源并检查是否有更新
-          return Promise.allSettled(
-            urlsToCache.map(url => 
-              // 先获取缓存中的资源
-              cache.match(url).then(cachedResponse => {
-                return fetch(url, { cache: 'reload' }) // 强制绕过浏览器缓存
-                  .then(networkResponse => {
-                    if (!networkResponse || !networkResponse.ok) {
-                      console.log(`更新缓存失败: ${url}`);
-                      return { updated: false };
-                    }
-                    
-                    // 比较 ETag 或 Last-Modified 来检查是否有更新
-                    let hasUpdate = false;
-                    if (cachedResponse) {
-                      const cachedETag = cachedResponse.headers.get('etag');
-                      const networkETag = networkResponse.headers.get('etag');
-                      const cachedLastModified = cachedResponse.headers.get('last-modified');
-                      const networkLastModified = networkResponse.headers.get('last-modified');
-                      
-                      if (cachedETag && networkETag) {
-                        hasUpdate = cachedETag !== networkETag;
-                      } else if (cachedLastModified && networkLastModified) {
-                        hasUpdate = cachedLastModified !== networkLastModified;
-                      } else {
-                        // 如果没有 ETag 或 Last-Modified，比较内容长度
-                        hasUpdate = cachedResponse.headers.get('content-length') !== networkResponse.headers.get('content-length');
-                      }
-                    } else {
-                      // 如果缓存中没有，说明是新资源
-                      hasUpdate = true;
-                    }
-                    
-                    return cache.put(url, networkResponse.clone()).then(() => ({
-                      updated: hasUpdate,
-                      url: url
-                    }));
-                  })
-                  .catch(err => {
-                    console.log(`更新缓存资源失败: ${url}, 错误: ${err}`);
-                    return { updated: false };
-                  });
-              })
-            )
-          ).then(results => {
-            // 检查是否有任何资源更新
-            const hasUpdates = results.some(result => 
-              result.status === 'fulfilled' && result.value.updated
-            );
-            
-            // 通知客户端缓存已更新
-            self.clients.matchAll().then(clients => {
-              clients.forEach(client => {
-                client.postMessage({
-                  action: 'cacheUpdated',
-                  timestamp: Date.now(),
-                  hasUpdates: hasUpdates
-                });
-              });
+      caches.delete(RUNTIME_CACHE)
+        .then(() => {
+          console.log('[SW] 运行时缓存已清除');
+          // 通知客户端缓存已更新
+          return self.clients.matchAll();
+        })
+        .then(clients => {
+          clients.forEach(client => {
+            client.postMessage({
+              action: 'cacheUpdated',
+              timestamp: Date.now(),
+              hasUpdates: true
             });
-            
-            if (hasUpdates) {
-              console.log('缓存已更新，发现新内容');
-            } else {
-              console.log('缓存已检查，无新内容');
-            }
           });
+          console.log('[SW] 缓存更新完成');
+        })
+        .catch(err => {
+          console.error('[SW] 清除缓存失败:', err);
         })
     );
   } else if (data.action === 'checkForUpdates') {
