@@ -4,7 +4,8 @@ import { useTimers } from '../../context/TimerContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import DigitColumn from './DigitColumn';
 import { addNotification } from '../../utils/notificationManager';
-import { FiPlay, FiPause, FiSquare, FiFlag } from 'react-icons/fi';
+import { FiPlay, FiPause, FiSquare, FiFlag, FiList } from 'react-icons/fi';
+import LapTimesModal from '../UI/LapTimesModal';
 
 export default function TimerDisplay() {
   const { getActiveTimer, updateTimer, checkAndUpdateDefaultTimer } = useTimers();
@@ -14,6 +15,7 @@ export default function TimerDisplay() {
   const [showYears, setShowYears] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [isLapModalOpen, setIsLapModalOpen] = useState(false);
   
   // 使用 ref 跟踪最后计算的时间，避免不必要的重渲染
   const lastTimeRef = useRef({ years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -369,19 +371,6 @@ export default function TimerDisplay() {
     return num.toString().padStart(2, '0');
   };
   
-  // 格式化毫秒为时分秒显示
-  const formatTimeFromMs = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    
-    if (hours > 0) {
-      return `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
-    }
-    return `${formatNumber(minutes)}:${formatNumber(seconds)}`;
-  };
-  
   const activeTimer = getActiveTimer();
   
   if (!activeTimer) {
@@ -586,56 +575,39 @@ export default function TimerDisplay() {
         {getTimerDescription()}
       </motion.p>
       
-      {/* 分段计时列表 */}
+      {/* 分段计时按钮 */}
       {activeTimer.type === 'stopwatch' && activeTimer.laps && activeTimer.laps.length > 0 && (
-        <motion.div
-          className="mt-8 w-full max-w-md glass-card p-4 rounded-xl"
+        <motion.button
+          className="mt-6 glass-card px-6 py-3 rounded-xl hover:bg-white/10 dark:hover:bg-black/10 transition-colors cursor-pointer"
+          style={{ 
+            color: activeTimer.color,
+            zIndex: 10,
+            position: 'relative',
+            pointerEvents: 'auto'
+          }}
+          onClick={() => setIsLapModalOpen(true)}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold" style={{ color: activeTimer.color }}>
-              {t('lap.title')}
-            </h3>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {activeTimer.laps.length} {t('lap.lapTime')}
-            </span>
+          <div className="flex items-center space-x-2">
+            <FiList className="text-xl" />
+            <span className="font-medium">{t('lap.title')}</span>
+            <span className="text-sm opacity-70">({activeTimer.laps.length})</span>
           </div>
-          
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {activeTimer.laps.slice().reverse().map((lap, index) => {
-              const lapNumber = activeTimer.laps.length - index;
-              const prevLap = lapNumber > 1 ? activeTimer.laps[lapNumber - 2] : null;
-              const intervalMs = prevLap ? lap.elapsedMs - prevLap.elapsedMs : lap.elapsedMs;
-              
-              return (
-                <motion.div
-                  key={lap.id}
-                  className="flex justify-between items-center p-3 rounded-lg bg-white/5 dark:bg-black/5"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <span className="font-medium" style={{ color: activeTimer.color }}>
-                    {currentLang === 'en-US' ? `Lap ${lapNumber}` : `第 ${lapNumber} 段`}
-                  </span>
-                  <div className="flex space-x-4 text-sm">
-                    <div className="text-right">
-                      <div className="text-gray-400 text-xs">{t('lap.lapInterval')}</div>
-                      <div className="font-mono">{formatTimeFromMs(intervalMs)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-gray-400 text-xs">{t('lap.totalTime')}</div>
-                      <div className="font-mono">{formatTimeFromMs(lap.elapsedMs)}</div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
+        </motion.button>
       )}
+      
+      {/* 分段计时弹窗 */}
+      <AnimatePresence>
+        {isLapModalOpen && activeTimer.type === 'stopwatch' && (
+          <LapTimesModal 
+            onClose={() => setIsLapModalOpen(false)}
+            laps={activeTimer.laps || []}
+            timerColor={activeTimer.color}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
