@@ -347,12 +347,13 @@ export default function TimerDisplay() {
         break;
         
       case 'lap':
-        // 记录分段时间
+        // Record lap time
         const startTime = new Date(timer.startTime);
         const elapsedMs = now - startTime - (timer.totalPausedTime || 0);
         const laps = timer.laps || [];
+        // Use a combination of timestamp and random to avoid collision
         const newLap = {
-          id: Date.now(),
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           timestamp: now.toISOString(),
           elapsedMs: elapsedMs
         };
