@@ -8,7 +8,7 @@ import { FiPlay, FiPause, FiSquare, FiFlag } from 'react-icons/fi';
 
 export default function TimerDisplay() {
   const { getActiveTimer, updateTimer, checkAndUpdateDefaultTimer } = useTimers();
-  const { t } = useTranslation();
+  const { t, currentLang } = useTranslation();
   const [timeValue, setTimeValue] = useState({ years: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [showDays, setShowDays] = useState(true);
   const [showYears, setShowYears] = useState(false);
@@ -617,7 +617,7 @@ export default function TimerDisplay() {
                   transition={{ delay: index * 0.05 }}
                 >
                   <span className="font-medium" style={{ color: activeTimer.color }}>
-                    {t('lap.lap', { number: lapNumber })}
+                    {currentLang === 'en-US' ? `Lap ${lapNumber}` : `第 ${lapNumber} 段`}
                   </span>
                   <div className="flex space-x-4 text-sm">
                     <div className="text-right">

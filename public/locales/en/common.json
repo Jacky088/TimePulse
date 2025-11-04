@@ -234,8 +234,7 @@
     "lapInterval": "Interval",
     "totalTime": "Total",
     "noLaps": "No lap records",
-    "clear": "Clear Records",
-    "lap": "Lap {number}"
+    "clear": "Clear Records"
   },
   "country": {
     "中国": "China",

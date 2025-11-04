@@ -234,8 +234,7 @@
     "lapInterval": "间隔",
     "totalTime": "累计",
     "noLaps": "暂无分段记录",
-    "clear": "清空记录",
-    "lap": "第 {number} 段"
+    "clear": "清空记录"
   },
   "country": {
     "中国": "中国",
