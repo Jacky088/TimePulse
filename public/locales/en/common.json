@@ -225,7 +225,16 @@
     "pause": "Pause",
     "resume": "Resume",
     "stop": "Stop",
-    "reset": "Reset"
+    "reset": "Reset",
+    "lap": "Lap"
+  },
+  "lap": {
+    "title": "Lap Times",
+    "lapTime": "Lap",
+    "lapInterval": "Interval",
+    "totalTime": "Total",
+    "noLaps": "No lap records",
+    "clear": "Clear Records"
   },
   "country": {
     "中国": "China",
